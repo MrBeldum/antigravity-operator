@@ -8,50 +8,79 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
-> **The Autonomous Session Agent Engine & OS Runtime**  
-> *Transform Google Antigravity and AI coding agents into autonomous, safe, and persistent operating system operators (Claude Computer Use / OS Agent style) with deterministic governance, filesystem memory, and total parity across macOS and Linux.*
+> **The Autonomous Session Agent Engine & OS Runtime for Google Antigravity**  
+> *Deterministic governance, filesystem operational memory, and Chrome DevTools isolation with seamless parity across macOS and Linux.*
 
 <p align="center">
-  <a href="README.pt-BR.md">🇧🇷 <b>Leia em Português</b></a> | <a href="#-quick-start"><b>Quick Start</b></a> | <a href="#-student--google-ai-pro-edition"><b>Student Edition</b></a> | <a href="CONTRIBUTING.md"><b>Contributing</b></a>
+  <a href="README.pt-BR.md">🇧🇷 <b>Leia em Português</b></a> | <a href="#-getting-started--installation"><b>Getting Started</b></a> | <a href="#-student--google-ai-pro-edition"><b>Student Edition</b></a> | <a href="CONTRIBUTING.md"><b>Contributing</b></a>
 </p>
 
----
-
-### 🎁 An Engineering Tribute to the Community & Google
-
-> *"This project is an open contribution to developers, students, and researchers worldwide, and a special tribute to **Google** for the transformative student access program through **Google AI Pro**."*  
->  
-> Our goal is to democratize high-end agentic engineering: enabling every student and software engineer to leverage 100% of the power of **Google Antigravity and Gemini Pro** models with professional rigour, zero token waste, and seamless portability across any Linux or macOS environment.
+> **Disclaimer:** *This is an open source community-driven companion project and is not an officially sponsored Google product. It is built to extend and empower the Google Antigravity & Google AI developer ecosystem.*
 
 ---
 
-## 🔍 The Problem: Why Google Antigravity Needs an Operator
+## 📑 Table of Contents
 
-Google Antigravity is one of the most powerful AI coding engines available today — featuring atomic tools for shell execution, surgical code edits, subagents, and Model Context Protocol (MCP) integrations.
+- [Overview](#-overview)
+- [Tribute to the Community & Google AI Pro](#-tribute-to-the-community--google-ai-pro)
+- [The Problem: Why Antigravity Needs an Operator](#-the-problem-why-antigravity-needs-an-operator)
+- [The Solution: Core Capabilities](#-the-solution-what-antigravity-operator-solves)
+- [Landscape & Benchmark](#-landscape-how-agyo-compares)
+- [Student, Research & Google AI Pro Edition](#-student-research--google-ai-pro-edition)
+- [System Architecture (SRP, KISS, YAGNI, DRY)](#-system-architecture-srp-kiss-yagni-dry)
+- [Getting Started & Installation](#-getting-started--installation)
+- [CLI Reference & Usage](#-cli-reference--usage)
+- [Contributing & Community Standards](#-contributing--community-standards)
+- [Security & License](#-security--license)
 
-**However, out of the box, Antigravity is a raw power engine without a built-in Session Harness:**
-* **Competitors bundle proprietary sandboxes:** Tools like Claude Code, Devin, or Cursor enforce pre-configured guardrails. Antigravity provides atomic tools (`run_command`, `write_to_file`), but leaves session governance, persistence, and OS lifecycle entirely to the user.
-* **Lack of Long-Term Memory:** Sessions lack deterministic filesystem persistence, causing operational amnesia across context window compactions.
-* **Runtime Friction:** Developers have to manually configure CDP ports, browser profile isolation, and diagnose headless Linux edge cases.
+---
+
+## 🔭 Overview
+
+**Antigravity Operator** (`agyo`) turns the raw power of Google Antigravity into an autonomous, safe, and persistent **Operating System Operator** (Claude Computer Use / OS Agent style).
+
+By implementing the canonical **Outer Harness (Martin Fowler)** model, `agyo` provides:
+1. **Deterministic Session Memory:** State persists directly in `.agents/session/` on disk (`state.md`, `decisions.md`, `todo.md`), eliminating context amnesia.
+2. **Zero-Pollution Chrome Isolation:** Automatically launches and supervises a dedicated Chrome instance on port `9222` (`~/.gemini/antigravity-browser-profile`), keeping your personal browsing safe and untouched.
+3. **Headless & Server Linux Parity:** Automatically detects missing graphical environments (`$DISPLAY` / `$WAYLAND_DISPLAY`) and activates robust server flags (`--headless=new`, `--disable-dev-shm-usage`, `--no-sandbox`).
+4. **Single-Binary Portability:** Written in pure Go with `CGO_ENABLED=0` and embedded templates (`//go:embed`), producing a self-contained ~6MB executable requiring zero dependencies.
+
+---
+
+## 🎁 Tribute to the Community & Google AI Pro
+
+> *"This project is an open engineering contribution to the developer community, students, and researchers worldwide, and a special thank you to **Google** for the transformative student access program through **Google AI Pro**."*
+
+Our mission is to democratize high-end agentic engineering: enabling every student and software engineer to leverage 100% of their **Gemini Pro and Antigravity** quotas with professional discipline, zero token waste, and seamless portability across any Linux or macOS machine.
+
+---
+
+## 🔍 The Problem: Why Antigravity Needs an Operator
+
+Google Antigravity provides state-of-the-art atomic tooling: arbitrary bash execution, surgical file edits, subagents, and Model Context Protocol (MCP) integrations.
+
+**However, out-of-the-box, it is a raw-power engine lacking an operational harness:**
+* **Competitors bundle proprietary sandboxes:** Tools like Claude Code, Devin, or Cursor enforce pre-configured guardrails. Antigravity provides atomic tools (`run_command`, `write_to_file`), leaving session governance, persistence, and OS lifecycle to the developer.
+* **Operational Amnesia:** Without deterministic filesystem state, agents lose context across compaction windows and repeated sessions.
+* **Runtime Friction:** Developers must manually configure CDP ports, isolate browser profiles, and debug headless Linux edge cases.
 
 ### The 4 Critical Failure Modes in Local AI Agents:
-
-1. **The "Drunken Agent" Syndrome:** Agents with bash access running wild commands, hallucinating paths, assuming code works without testing, and entering infinite retry loops burning tokens.
-2. **Operational Amnesia & Context Drift:** As discussions grow, agents forget previous architectural agreements and repeat solved mistakes.
-3. **Personal Browser Hijacking & Security Risks:** Agents interacting with web pages by hijacking the developer's personal Chrome profile, exposing sensitive cookies or crashing active tabs.
-4. **The macOS vs Linux Chasm:** Automation scripts developed on macOS failing on Linux servers, VPSs, WSL2, or Docker due to missing graphical displays (`$DISPLAY`), `/dev/shm` memory constraints, or sandbox permission errors.
+1. **The "Drunken Agent" Syndrome:** Agents executing unchecked commands, hallucinating paths, assuming code works without testing, and entering infinite retry loops burning API quota.
+2. **Operational Amnesia & Context Drift:** As token limits are reached, agents forget earlier architectural agreements and repeat solved mistakes.
+3. **Personal Browser Hijacking:** Agents interacting with the web using the user's personal browser profile, risking banking cookies, private tabs, or crashes.
+4. **The macOS vs Linux Chasm:** Scripts developed on macOS failing on Linux servers, VPSs, WSL2, or Docker due to missing graphical displays (`$DISPLAY`), `/dev/shm` memory constraints, or sandbox permission errors.
 
 ---
 
 ## 💡 The Solution: What `antigravity-operator` Solves
 
-The **`antigravity-operator`** (`agyo`) wraps operating system infrastructure and governance around Antigravity:
-
-* **Martin Fowler Outer Harness (Guide × Sensor):** The agent operates strictly with no unverified assumptions. Deterministic rules guide the model before generation; computational sensors (`go test`, linters, runtime probes) validate every change before completion.
-* **Persistent Session Memory (`.agents/session/`):** State transitions are versioned directly in the project filesystem (`state.md`, `decisions.md`, `todo.md`). Memory survives context compactions and IDE restarts.
-* **Total Chrome Isolation via DevTools MCP:** Automatically manages an isolated Google Chrome instance (`~/.gemini/antigravity-browser-profile`) on debug port `9222`, keeping your personal browsing completely untouched.
-* **Dynamic Headless Mode (Linux & Servers):** Intelligently detects graphical displays (`$DISPLAY` / `$WAYLAND_DISPLAY`). If headless, it seamlessly injects `--headless=new`, `--disable-dev-shm-usage`, and `--no-sandbox`.
-* **Zero Runtime Dependencies (Single Binary Go):** Pure Go (`CGO_ENABLED=0`), generating a single static ~6MB binary that runs instantly on any macOS (Apple Silicon / Intel) or Linux (x86_64 / ARM64) distribution.
+| Capability | Engineering Implementation |
+|---|---|
+| **Outer Harness (Fowler)** | **Guide × Sensor:** Deterministic directives guide the model; automated tests (`go test`, linters, runtime probes) validate every change before completion. |
+| **Filesystem Memory** | **`.agents/session/`:** Real-time state (`state.md`), architecture log (`decisions.md`), and task tracker (`todo.md`) persist across chat resets. |
+| **Browser Supervision** | **Chrome DevTools Protocol (CDP):** Dedicated profile on port `9222`, PID tracking, and graceful shutdown (`agyo browser stop`). |
+| **Auto-Headless Mode** | **Dynamic Display Probe:** Injects `--headless=new`, `--disable-dev-shm-usage`, and `--no-sandbox` automatically in server environments. |
+| **Zero Runtime Deps** | **Pure Go (`CGO_ENABLED=0`):** Single static ~6MB binary containing all embedded rules and templates. |
 
 ---
 
@@ -68,12 +97,12 @@ The **`antigravity-operator`** (`agyo`) wraps operating system infrastructure an
 
 ---
 
-## 🎓 Spotlight: Students, Researchers & Google AI Pro
+## 🎓 Student, Research & Google AI Pro Edition
 
-For computer science students and researchers benefiting from academic programs like **Google AI Pro**, `agyo` is the ultimate productivity multiplier:
+For computer science students and researchers leveraging academic benefits such as **Google AI Pro**, `agyo` is the ultimate productivity multiplier:
 
-1. **Token Quota Conservation:** Prevents infinite loops and verbose repetitive code outputs, ensuring your Gemini Pro quota lasts the entire semester.
-2. **Zero-Root Portability in University Labs (Linux):** University labs often run locked-down Linux machines where students cannot install Docker or global packages. The static `agyo-linux-amd64` binary runs directly from user space (`~/`).
+1. **Token Quota Conservation:** Prevents infinite retry loops and verbose repetitive code outputs, ensuring your Gemini Pro quota lasts the entire semester.
+2. **Zero-Root Portability in University Labs (Linux):** University labs often run locked-down Linux machines without `sudo` access to install Docker or system packages. The static `agyo-linux-amd64` binary runs directly from user space (`~/`).
 3. **Academic Logbook & Portfolio:** The `.agents/session/` folder preserves architectural rationales and algorithm trade-offs, turning daily coding into documented learning logs.
 4. **Safe Sandbox:** Isolated Chrome automation protects personal university credentials and institutional logins.
 
@@ -85,7 +114,7 @@ This repository includes 3 canonical skills out-of-the-box:
 
 ---
 
-## 🏛️ Architecture (SRP, KISS, YAGNI, DRY)
+## 🏛️ System Architecture (SRP, KISS, YAGNI, DRY)
 
 ```text
 antigravity-operator/
@@ -102,19 +131,28 @@ antigravity-operator/
 │   └── mcps/                 # Default MCP servers manifest (DevTools, Playwright)
 ├── agents/                   # Specialized AI personas (operator-architect, cdp-engineer, qa-sentinel)
 ├── skills/                   # Bonus student skills (feynman tutor, study planner, token guard)
-├── docs/                     # In-depth architectural & cross-platform specs
+├── docs/                     # Architectural and cross-platform specifications
 ├── .github/workflows/        # Automated multi-OS CI (Ubuntu & macOS)
 ├── scripts/
 │   ├── bootstrap.sh          # One-liner end-user setup
 │   └── setup-dev.sh          # Developer setup with pre-commit hooks
+├── AUTHORS                   # Project authors
+├── CONTRIBUTORS              # Project contributors
+├── CODE_OF_CONDUCT.md        # Google Open Source Community Guidelines
+├── SECURITY.md               # Responsible vulnerability disclosure policy
+├── CONTRIBUTING.md           # Contribution guide and testing protocol
 └── Makefile                  # Native build and cross-compilation targets
 ```
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Getting Started & Installation
 
-### Build Locally (Go 1.22+)
+### Prerequisites
+- Go 1.22+ (to build from source) or download pre-built binary
+- Google Chrome or Chromium installed on the host
+
+### Build Locally
 ```bash
 git clone https://github.com/tiagovilasboas/antigravity-operator.git
 cd antigravity-operator
@@ -134,25 +172,12 @@ make build-linux
 
 ---
 
-## 🚀 CLI Usage
+## 🚀 CLI Reference & Usage
 
 ### 1. Environment Diagnostics (`doctor`)
 Inspects system readiness across OS, Git, Chrome, Node/NPX, and Harness connections:
 ```bash
 agyo doctor
-```
-
-Example output:
-```text
-🔍 Antigravity Operator Doctor [SO: darwin | Arch: arm64]
-🖥️  Display Environment: Detected (Desktop GUI)
------------------------------------------------------------------
-✅ Git                          : git version 2.39.5 (Apple Git-154) (Tiago Vilas Boas <tcarvalhovb@gmail.com>)
-✅ Google Chrome                : Found at: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-⚠️  Chrome DevTools (Port 9222)  : Inactive (run 'agyo browser start' to launch)
-✅ NPX (MCP Runtime)            : Version 10.8.2 available
-✅ Harness Core                 : Connected at /Users/tiago.boas/Github/harness-core
------------------------------------------------------------------
 ```
 
 ### 2. Scaffold Operational Memory (`init`)
@@ -200,16 +225,16 @@ agyo about
 
 ---
 
-## 🛡️ Canonical Operational Rules
+## 🤝 Contributing & Community Standards
 
-When operating under `agyo`, agents adhere to 5 core rules:
-1. **Autonomous Investigation:** Seek ground truth via shell, browser, and logs before asking trivia.
-2. **Multi-Tool Orchestration:** Identify -> Investigate -> Implement -> Test -> Validate in Browser.
-3. **Rigorous Validation:** Tasks are complete only after verified end-to-end evidence.
-4. **Profile Isolation:** Never compromise or access the user's personal browser profile.
-5. **Concise Communication:** Direct, technical, and grounded in empirical facts.
+We welcome contributions! Please review:
+* [CONTRIBUTING.md](CONTRIBUTING.md) — Step-by-step contribution and testing workflow.
+* [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Adapted from Contributor Covenant and Google Open Source Guidelines.
+* [AUTHORS](AUTHORS) & [CONTRIBUTORS](CONTRIBUTORS) — List of project maintainers and contributors.
 
 ---
 
-## 📄 License
-Distributed under the [MIT](LICENSE) License.
+## 🔒 Security & License
+
+* **Security Policy:** Refer to [SECURITY.md](SECURITY.md) for vulnerability disclosure guidelines.
+* **License:** Distributed under the [MIT](LICENSE) License.

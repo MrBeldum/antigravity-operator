@@ -11,6 +11,24 @@
 > **The Autonomous Session Agent Engine & OS Runtime**  
 > *Transforme o Google Antigravity e outros clientes de IA em operadores autônomos de sistema operacional (estilo Claude Computer Use / OS Agent), com governança rígida, memória de sessão persistente no disco e paridade total entre macOS e Linux.*
 
+> **Aviso:** *Este é um projeto comunitário de código aberto e não é um produto oficial patrocinado pelo Google. Foi concebido para estender e potencializar o ecossistema do Google Antigravity e desenvolvedores Google AI.*
+
+---
+
+## 📑 Sumário
+
+- [Visão Geral](#-visão-geral)
+- [Presente para a Comunidade & Google AI Pro](#-um-presente-de-engenharia-para-a-comunidade--para-o-google)
+- [O Problema: Por Que o Antigravity Precisa de um Operator?](#-o-problema-por-que-o-antigravity-precisa-de-um-operator)
+- [A Solução & Recursos Principais](#-a-solução-o-que-o-antigravity-operator-resolve)
+- [Comparativo de Mercado](#-comparativo-onde-o-agyo-se-posiciona)
+- [Caso de Uso para Estudantes e Google AI Pro](#-caso-de-uso-de-destaque-estudantes-pesquisa--google-ai-pro)
+- [Arquitetura do Sistema (SRP, KISS, YAGNI, DRY)](#-arquitetura-canônica-srp-kiss-yagni-dry)
+- [Instalação e Início Rápido](#-instalação-rápida)
+- [Como Usar a CLI](#-como-usar)
+- [Padrões de Comunidade e Contribuição](#-contribuindo-e-padrões-da-comunidade)
+- [Segurança e Licença](#-segurança-e-licença)
+
 ---
 
 ### 🎁 Um Presente de Engenharia para a Comunidade & para o Google
