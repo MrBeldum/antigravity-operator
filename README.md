@@ -73,6 +73,12 @@ Para estudantes de tecnologia, computação e engenharia que utilizam os benefí
 3. **Diário de Bordo de Estudos & Portfólio:** A pasta `.agents/session/` registra o histórico técnico, trade-offs de algoritmos e decisões de código, servindo como documentação viva do aprendizado.
 4. **Laboratório Seguro:** Navegação via DevTools MCP com perfil isolado impede que o agente acesse contas pessoais, senhas ou dados da universidade.
 
+### 🎁 Skills para Estudantes Incluídas de Brinde (`skills/`):
+O repositório já inclui 3 skills prontas para acelerar a rotina acadêmica:
+* **`feynman-code-tutor`:** Tutor sênior baseado na Técnica Feynman. Explica algoritmos, estruturas de dados e Big-O com analogias do mundo real e perguntas de fixação.
+* **`student-study-planner`:** Decompõe ementas pesadas, projetos finais e matérias complexas em sprints gerenciáveis de estudo focado (20% teoria, 80% código).
+* **`token-budget-guard`:** Guardião cirúrgico que impede respostas repetitivas ou leitura desnecessária de arquivos, estendendo a longevidade da sua cota do Google AI Pro.
+
 ---
 
 ## 🏛️ Arquitetura Canônica (SRP, KISS, YAGNI, DRY)
