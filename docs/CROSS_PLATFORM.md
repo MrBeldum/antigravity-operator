@@ -1,31 +1,33 @@
-# Matriz de Compatibilidade Cross-Platform (macOS & Linux)
+# Cross-Platform Compatibility Matrix (macOS & Linux)
 
-O `antigravity-operator` (`agyo`) foi concebido para entregar a **mesma experiência de Session Agent** tanto em estações de trabalho locais (macOS) quanto em servidores, VMs ou ambientes de desenvolvimento Linux.
+[🇧🇷 Leia em Português](CROSS_PLATFORM.pt-BR.md)
+
+`antigravity-operator` (`agyo`) is designed to deliver **identical Session Agent capabilities** across local developer laptops (macOS) and remote server/container environments (Linux).
 
 ---
 
-## 📊 Matriz de Ambientes
+## 📊 Environment Support Matrix
 
-| Sistema / Ambiente | Modo Padrão | Flags do Chrome Aplicadas | Resolução do Binário do Chrome |
+| OS / Runtime Environment | Default Mode | Applied Chrome Flags | Chrome Binary Resolution |
 |---|---|---|---|
 | **macOS (Darwin ARM64 / Apple Silicon)** | Desktop GUI | `--remote-debugging-port=9222`<br>`--user-data-dir=...` | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` |
 | **macOS (Darwin AMD64 / Intel)** | Desktop GUI | `--remote-debugging-port=9222`<br>`--user-data-dir=...` | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` |
 | **Linux Desktop (X11 / Wayland)** | Desktop GUI | `--remote-debugging-port=9222`<br>`--user-data-dir=...` | `google-chrome`, `google-chrome-stable`, `chromium` |
-| **Linux Server / VPS (Sem Display)** | **Headless Automático** | `--headless=new`<br>`--disable-gpu`<br>`--disable-dev-shm-usage`<br>`--no-sandbox` | `google-chrome`, `chromium-browser` |
-| **WSL2 (Windows Subsystem for Linux)** | Headless / WSLg | Se `$WAYLAND_DISPLAY` existir, usa GUI; caso contrário ativa Headless | `google-chrome` ou `/mnt/c/...` |
-| **Docker Container** | **Headless Obrigatório** | `--headless=new`<br>`--disable-dev-shm-usage`<br>`--no-sandbox` | `chromium` instalado via apt/apk |
+| **Linux Server / VPS (Headless)** | **Auto-Headless** | `--headless=new`<br>`--disable-gpu`<br>`--disable-dev-shm-usage`<br>`--no-sandbox` | `google-chrome`, `chromium-browser` |
+| **WSL2 (Windows Subsystem for Linux)** | Headless / WSLg | Uses GUI if `$WAYLAND_DISPLAY` is active; falls back to Headless otherwise | `google-chrome` or Windows host binary |
+| **Docker Container** | **Mandatory Headless** | `--headless=new`<br>`--disable-dev-shm-usage`<br>`--no-sandbox` | `chromium` installed via apt/apk |
 
 ---
 
-## ⚠️ Peculiaridades do Linux Resolvidas pelo `agyo`
+## ⚠️ Linux Edge Cases Handled Automatically by `agyo`
 
-1. **Crash de `/dev/shm` (Shared Memory):**
-   * Em servidores Linux e containers Docker, o tamanho de `/dev/shm` é frequentemente restrito a 64MB. Isso causa crash aleatório do Chrome ao renderizar páginas pesadas.
-   * O `agyo` injeta automaticamente `--disable-dev-shm-usage` em ambientes sem display.
+1. **Shared Memory Exhaustion (`/dev/shm` Crash):**
+   * Docker containers and Linux virtual machines typically restrict `/dev/shm` to 64MB. This causes spontaneous Chrome browser crashes during heavy DOM rendering.
+   * `agyo` automatically injects `--disable-dev-shm-usage` whenever running in headless server environments.
 
-2. **Detecção de Servidor Gráfico:**
-   * O `agyo` inspeciona as variáveis `$DISPLAY` e `$WAYLAND_DISPLAY`.
-   * Se nenhuma estiver configurada, o agente não falha tentando abrir uma janela gráfica inexistente: ele transiciona silenciosa e confiavelmente para o modo `--headless=new`.
+2. **Display Server Auto-Detection:**
+   * `agyo` probes `$DISPLAY` and `$WAYLAND_DISPLAY`.
+   * When neither is available, the agent does not crash attempting to open a window; it transitions deterministically into `--headless=new`.
 
-3. **Permissões de Sandbox em Containers:**
-   * Usuários sem privilégios de root em containers Linux encontram erros com o SUID sandbox do Chrome. A flag `--no-sandbox` é ativada dinamicamente nos modos headless para garantir inicialização sem fricção.
+3. **Container Sandbox Permissions:**
+   * Non-root users in containerized Linux environments often encounter SUID sandbox failures. The `--no-sandbox` flag is applied dynamically in headless/container contexts to guarantee zero-friction startup.

@@ -1,28 +1,32 @@
-# Arquitetura do Antigravity Operator (`agyo`)
+# Antigravity Operator (`agyo`) Architecture Specification
 
-## 1. Visão Geral do Sistema
+[🇧🇷 Leia em Português](ARCHITECTURE.pt-BR.md)
 
-O `antigravity-operator` opera como uma camada de runtime e governança entre o **Modelo de IA** (como Gemini ou Claude no Antigravity) e o **Sistema Operacional do Desenvolvedor** (macOS ou Linux).
+---
+
+## 1. System Overview
+
+`antigravity-operator` operates as a deterministic runtime and outer harness layer between the **AI Model** (Gemini Pro in Google Antigravity) and the **Developer's Operating System** (macOS or Linux).
 
 ```mermaid
 graph TD
-    User([Usuário / Sessão]) -->|Prompt| Agent[Antigravity Session Agent]
+    User([User / Developer]) -->|Prompt| Agent[Google Antigravity Session Agent]
     
-    subgraph Governance ["Outer Harness (Fowler)"]
-        Agent -->|1. Consulta Guia| Rules[templates/rules/session-agent.md]
-        Agent -->|2. Persiste Estado| Memory[".agents/session/{state, decisions, todo}.md"]
+    subgraph Governance ["Outer Harness (Martin Fowler Model)"]
+        Agent -->|1. Ingests Guide| Rules[templates/rules/session-agent.md]
+        Agent -->|2. Persists State| Memory[".agents/session/{state, decisions, todo}.md"]
     end
 
     subgraph Runtime ["Agyo OS Engine (Go)"]
-        Agent -->|3. Executa Ações| CLI[agyo CLI]
+        Agent -->|3. Dispatches Actions| CLI[agyo CLI]
         CLI --> Platform[internal/platform]
         CLI --> Doctor[internal/doctor]
         CLI --> Profile[internal/profile]
         CLI --> Installer[internal/installer]
     end
 
-    subgraph OS_Targets ["Alvos do Sistema Operacional"]
-        Profile -->|CDP Port 9222| IsolatedChrome["Chrome Isolado (~/.gemini/antigravity-browser-profile)"]
+    subgraph OS_Targets ["Host Operating System Targets"]
+        Profile -->|CDP Port 9222 / PID| IsolatedChrome["Dedicated Chrome (~/.gemini/antigravity-browser-profile)"]
         CLI -->|Shell / Git| Filesystem["Filesystem & Git Repo"]
         Installer -->|MCPs| DevToolsMCP["Chrome DevTools MCP & Playwright"]
     end
@@ -30,31 +34,31 @@ graph TD
 
 ---
 
-## 2. Ciclo de Vida da Sessão
+## 2. Session Lifecycle & State Transitions
 
-1. **Inicialização (`agyo init`):**
-   * Cria o diretório `.agents/session/`.
-   * Cria os arquivos `state.md`, `decisions.md` e `todo.md` com templates canônicos caso não existam.
-   * Cria `.agents/.gitignore` para impedir que credenciais e dados temporários de depuração sejam commitados acidentalmente.
+1. **Scaffolding (`agyo init`):**
+   * Initializes `.agents/session/`.
+   * Provisions `state.md`, `decisions.md`, and `todo.md` using canonical templates.
+   * Creates `.agents/.gitignore` to prevent secret leaks, debug dumps, and ephemeral runtime logs from entering version control.
 
-2. **Diagnóstico da Máquina (`agyo doctor`):**
-   * Avalia a saúde da máquina local: Git, Chrome, Node/NPX, exibição gráfica e integração com o `harness-core`.
-   * Classifica cada item como `OK`, `WARN`, `FAIL` ou `INFO`.
+2. **Host Diagnostics (`agyo doctor`):**
+   * Assesses machine readiness across Git configuration, Chrome installation, Node/NPX availability, display server status (X11/Wayland/Headless), and central `harness-core` integration.
+   * Emits deterministic statuses (`OK`, `WARN`, `FAIL`, `INFO`).
 
-3. **Orquestração de Navegação (`agyo browser start`):**
-   * Lança o Google Chrome restrito ao diretório `~/.gemini/antigravity-browser-profile`.
-   * Abre a porta de depuração remota `9222`.
-   * Se executado em ambiente Linux sem servidor gráfico (`$DISPLAY`), automaticamente anexa as flags headless essenciais (`--headless=new`, `--disable-dev-shm-usage`, `--no-sandbox`).
-   * Faz polling no endpoint `http://127.0.0.1:9222/json/version` até receber status 200 OK.
+3. **Browser Lifecycle & CDP Supervision (`agyo browser`):**
+   * Spawns an isolated Google Chrome instance bounded to `~/.gemini/antigravity-browser-profile`.
+   * Exposes remote debugging port `9222` (or user-defined `--port`).
+   * Automatically falls back to headless flags (`--headless=new`, `--disable-dev-shm-usage`, `--no-sandbox`) when operating in headless Linux servers, Docker containers, or headless WSL2.
+   * Tracks process ID in `chrome.pid` and enables graceful teardown via `agyo browser stop` (SIGTERM with SIGKILL timeout fallback).
 
-4. **Sincronização de Regras (`agyo sync`):**
-   * Grava as regras canônicas do Session Agent em `~/.gemini/antigravity/rules/session-agent.md`.
-   * Prepara os manifestos padrão de MCPs em `~/.gemini/antigravity/mcp/default-servers.json`.
+4. **Rules & Manifesto Sync (`agyo sync`):**
+   * Deploys canonical Session Agent directives into `~/.gemini/antigravity/rules/session-agent.md`.
+   * Configures standard Model Context Protocol servers in `~/.gemini/antigravity/mcp/default-servers.json`.
 
 ---
 
-## 3. Padrões de Projeto e Decisões de Engenharia
+## 3. Engineering Decisions & Principles
 
-- **Single Responsibility Principle (SRP):** Cada pacote sob `internal/` possui um escopo estrito e não vaza detalhes de implementação para outros pacotes.
-- **Embed Nativo (`//go:embed`):** Permite distribuição de binário único sem instaladores complexos ou necessidade de clonar o repositório em todas as máquinas.
-- **Zero CGO (`CGO_ENABLED=0`):** Garante compatibilidade binária entre qualquer versão de kernel Linux e biblioteca C (glibc ou musl).
+- **Single Responsibility Principle (SRP):** Each internal package (`platform`, `session`, `profile`, `installer`, `doctor`) is strictly decoupled.
+- **Embedded Assets (`//go:embed`):** Eliminates external filesystem dependencies at runtime, ensuring offline, self-contained single-binary execution.
+- **Pure Go / Zero CGO (`CGO_ENABLED=0`):** Guarantees dynamic linker independence across glibc, musl, and diverse Linux kernel distributions.

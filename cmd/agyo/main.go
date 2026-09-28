@@ -22,7 +22,7 @@ func main() {
 
 	info, err := platform.Detect()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Erro ao detectar plataforma: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error detecting platform: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -44,7 +44,7 @@ func main() {
 	case "help", "-h", "--help":
 		printUsage()
 	default:
-		fmt.Fprintf(os.Stderr, "Comando desconhecido: %s\n\n", command)
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n\n", command)
 		printUsage()
 		os.Exit(1)
 	}
@@ -54,42 +54,42 @@ func printUsage() {
 	fmt.Println(`agyo - Antigravity Operator CLI (Autonomous Session Agent Engine)
 The Official Community Outer Harness for Google Antigravity & Google AI Pro
 
-Uso:
-  agyo <comando> [argumentos]
+Usage:
+  agyo <command> [arguments]
 
-Comandos disponíveis:
-  init [dir]          Inicializa a memória operacional (.agents/session/) no projeto
-  doctor              Audita a saúde da máquina (OS, Chrome, DevTools 9222, Git, Node)
-  browser start       Inicia o Chrome isolado com remote debugging e flags corretas
-  browser status      Verifica a integridade da porta DevTools (9222) e PID do Chrome
-  browser stop        Encerra graciosamente o processo do Chrome isolado (SIGTERM)
-  sync                Sincroniza regras globais e MCPs canônicos no Antigravity
-  about               Manifesto e dedicatória à comunidade e ao Google
-  version             Exibe a versão do operador e arquitetura do sistema`)
+Available commands:
+  init [dir]          Scaffold operational memory (.agents/session/) in the target project
+  doctor              Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)
+  browser start       Launch isolated Chrome instance with remote debugging flags
+  browser status      Inspect DevTools port (9222) readiness and Chrome process PID
+  browser stop        Gracefully terminate isolated Chrome process (SIGTERM)
+  sync                Synchronize canonical rules and MCP manifests to Google Antigravity
+  about               Display manifesto and tribute to the community & Google AI Pro
+  version             Print version and system architecture`)
 }
 
 func printAbout() {
 	fmt.Println(`================================================================================
-  ANTIGRAVITY OPERATOR (agyo) — RUNTIME & OUTER HARNESS DE SESSÃO
+  ANTIGRAVITY OPERATOR (agyo) — SESSION RUNTIME & OUTER HARNESS
 ================================================================================
 
-Este projeto é um presente de engenharia para a comunidade de desenvolvedores,
-estudantes e pesquisadores, e um agradecimento especial ao Google pelo plano de
-incentivo aos estudantes através do Google AI Pro.
+This project is an open engineering tribute to the developer community, students,
+and researchers worldwide, and a special thank you to Google for the transformative
+student access program through Google AI Pro.
 
-Missão:
-Transformar a força bruta atômica do Google Antigravity em um Session Agent
-autônomo, seguro, com persistência de memória no disco (.agents/session/) e paridade
-absoluta entre macOS e Linux — permitindo que qualquer estudante ou engenheiro
-aproveite 100% da cota do Gemini Pro sem desperdício de tokens e sem fricção.
+Mission:
+Transform the raw atomic power of Google Antigravity into an autonomous, safe, and
+persistent Session Operator with filesystem memory (.agents/session/) and seamless
+parity across macOS and Linux — empowering every student and engineer to leverage
+100% of their Gemini Pro quota without token waste or runtime friction.
 
-Desenvolvido com carinho e rigor de engenharia (Martin Fowler Outer Harness).
+Built with care, precision, and canonical software engineering (Martin Fowler Outer Harness).
 ================================================================================`)
 }
 
 func runInit(args []string) {
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-	force := initCmd.Bool("force", false, "Sobrescrever arquivos existentes de sessão")
+	force := initCmd.Bool("force", false, "Overwrite existing session files")
 	_ = initCmd.Parse(args)
 
 	targetDir := "."
@@ -99,25 +99,25 @@ func runInit(args []string) {
 
 	res, err := session.Init(targetDir, *force)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Erro ao inicializar sessão: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error initializing session: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("✅ Memória operacional inicializada em: %s\n", res.SessionDir)
+	fmt.Printf("✅ Session memory initialized at: %s\n", res.SessionDir)
 	for _, c := range res.Created {
-		fmt.Printf("   + Criado: %s\n", c)
+		fmt.Printf("   + Created: %s\n", c)
 	}
 	for _, s := range res.Skipped {
-		fmt.Printf("   - Mantido (existente): %s\n", s)
+		fmt.Printf("   - Kept (already exists): %s\n", s)
 	}
 }
 
 func runDoctor(info *platform.Info) {
-	fmt.Printf("🔍 Antigravity Operator Doctor [SO: %s | Arch: %s]\n", info.OS, info.Arch)
+	fmt.Printf("🔍 Antigravity Operator Doctor [OS: %s | Arch: %s]\n", info.OS, info.Arch)
 	if info.HasDisplay {
-		fmt.Println("🖥️  Ambiente Gráfico: Detectado (Desktop GUI)")
+		fmt.Println("🖥️  Display Server: Detected (Desktop GUI)")
 	} else {
-		fmt.Println("🖥️  Ambiente Gráfico: Não detectado (Headless Mode ativo)")
+		fmt.Println("🖥️  Display Server: Not detected (Headless Mode Active)")
 	}
 	fmt.Println("-----------------------------------------------------------------")
 
@@ -141,7 +141,7 @@ func runDoctor(info *platform.Info) {
 
 func runBrowser(info *platform.Info, args []string) {
 	if len(args) == 0 {
-		fmt.Println("Uso: agyo browser [start|status|stop]")
+		fmt.Println("Usage: agyo browser [start|status|stop]")
 		os.Exit(1)
 	}
 
@@ -154,51 +154,51 @@ func runBrowser(info *platform.Info, args []string) {
 			if st.PID > 0 {
 				pidInfo = fmt.Sprintf(" [PID: %d]", st.PID)
 			}
-			fmt.Printf("✅ Chrome DevTools ATIVO na porta %d (%s)%s\n", st.Port, st.Version, pidInfo)
-			fmt.Printf("   Perfil isolado: %s\n", st.ProfileDir)
+			fmt.Printf("✅ Chrome DevTools ACTIVE on port %d (%s)%s\n", st.Port, st.Version, pidInfo)
+			fmt.Printf("   Isolated profile: %s\n", st.ProfileDir)
 		} else {
-			fmt.Printf("⚠️  Chrome DevTools INATIVO na porta %d\n", st.Port)
-			fmt.Printf("   Para iniciar, execute: agyo browser start\n")
+			fmt.Printf("⚠️  Chrome DevTools INACTIVE on port %d\n", st.Port)
+			fmt.Printf("   To launch, run: agyo browser start\n")
 		}
 	case "start":
 		browserCmd := flag.NewFlagSet("browser start", flag.ExitOnError)
-		headless := browserCmd.Bool("headless", false, "Forçar modo headless mesmo com display")
-		port := browserCmd.Int("port", profile.DefaultDebugPort, "Porta de remote debugging do Chrome")
+		headless := browserCmd.Bool("headless", false, "Force headless mode even with display available")
+		port := browserCmd.Int("port", profile.DefaultDebugPort, "Chrome remote debugging port")
 		_ = browserCmd.Parse(args[1:])
 
-		fmt.Printf("🚀 Iniciando Chrome isolado para o Google Antigravity na porta %d...\n", *port)
+		fmt.Printf("🚀 Launching isolated Chrome for Google Antigravity on port %d...\n", *port)
 		err := profile.Start(info, profile.StartOptions{
 			Port:          *port,
 			ForceHeadless: *headless,
 		})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao iniciar browser: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Error starting browser: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("✅ Chrome isolado ativo com sucesso na porta %d!\n", *port)
+		fmt.Printf("✅ Isolated Chrome active on port %d!\n", *port)
 	case "stop":
-		fmt.Println("🛑 Encerrando instância isolada do Chrome...")
+		fmt.Println("🛑 Terminating isolated Chrome instance...")
 		err := profile.Stop(info)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Aviso ao encerrar browser: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Warning terminating browser: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("✅ Chrome isolado encerrado com sucesso.")
+		fmt.Println("✅ Isolated Chrome terminated successfully.")
 	default:
-		fmt.Fprintf(os.Stderr, "Subcomando de browser desconhecido: %s\n", sub)
+		fmt.Fprintf(os.Stderr, "Unknown browser subcommand: %s\n", sub)
 		os.Exit(1)
 	}
 }
 
 func runSync(info *platform.Info) {
-	fmt.Println("🔄 Sincronizando regras e manifestos do Session Agent no Google Antigravity...")
+	fmt.Println("🔄 Synchronizing rules and manifests into Google Antigravity...")
 	res, err := installer.Sync(info)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Erro na sincronização: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error during synchronization: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("✅ Regras sincronizadas em: %s\n", res.RulesPath)
+	fmt.Printf("✅ Rules synchronized at: %s\n", res.RulesPath)
 	if res.MCPPath != "" {
-		fmt.Printf("✅ Manifesto MCP preparado em: %s\n", res.MCPPath)
+		fmt.Printf("✅ MCP manifest prepared at: %s\n", res.MCPPath)
 	}
 }

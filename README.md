@@ -9,213 +9,207 @@
 </p>
 
 > **The Autonomous Session Agent Engine & OS Runtime**  
-> *Transforme o Google Antigravity e outros clientes de IA em operadores autônomos de sistema operacional (estilo Claude Computer Use / OS Agent), com governança rígida, memória de sessão persistente no disco e paridade total entre macOS e Linux.*
+> *Transform Google Antigravity and AI coding agents into autonomous, safe, and persistent operating system operators (Claude Computer Use / OS Agent style) with deterministic governance, filesystem memory, and total parity across macOS and Linux.*
+
+<p align="center">
+  <a href="README.pt-BR.md">🇧🇷 <b>Leia em Português</b></a> | <a href="#-quick-start"><b>Quick Start</b></a> | <a href="#-student--google-ai-pro-edition"><b>Student Edition</b></a> | <a href="CONTRIBUTING.md"><b>Contributing</b></a>
+</p>
 
 ---
 
-### 🎁 Um Presente de Engenharia para a Comunidade & para o Google
+### 🎁 An Engineering Tribute to the Community & Google
 
-> *"Este projeto é uma contribuição aberta da comunidade para todos os desenvolvedores, estudantes e pesquisadores, e um agradecimento especial ao **Google** pelo incentivo transformador concedido aos estudantes através do plano **Google AI Pro**."*  
+> *"This project is an open contribution to developers, students, and researchers worldwide, and a special tribute to **Google** for the transformative student access program through **Google AI Pro**."*  
 >  
-> Nosso objetivo é democratizar a engenharia de ponta: permitir que qualquer estudante ou desenvolvedor utilize 100% do poder do **Google Antigravity e dos modelos Gemini Pro** com rigor profissional, sem queimar cotas de API com loops desgovernados e com portabilidade absoluta para qualquer laboratório Linux ou macOS.
+> Our goal is to democratize high-end agentic engineering: enabling every student and software engineer to leverage 100% of the power of **Google Antigravity and Gemini Pro** models with professional rigour, zero token waste, and seamless portability across any Linux or macOS environment.
 
 ---
 
-## 🔍 O Problema: Por Que o Antigravity Precisa de um Operator?
+## 🔍 The Problem: Why Google Antigravity Needs an Operator
 
-O Google Antigravity é uma das plataformas de desenvolvimento assistido por IA mais poderosas da atualidade — possui ferramentas atômicas nativas de shell, edição cirúrgica, MCPs e subagentes. 
+Google Antigravity is one of the most powerful AI coding engines available today — featuring atomic tools for shell execution, surgical code edits, subagents, and Model Context Protocol (MCP) integrations.
 
-**Porém, "de fábrica", o Antigravity é uma engine de força bruta sem um Harness de Sessão embutido:**
-* **Concorrentes já empacotam guard-rails:** Ferramentas como Claude Code, Devin ou Cursor possuem convenções prontas ou sandboxes fechadas. O Antigravity te entrega as ferramentas atômicas puras (`run_command`, `write_to_file`), mas **não entrega a camada de governança e controle de sessão**.
-* **Sem memória de longo prazo:** Ele não possui um protocolo nativo de persistência de estado no disco, gerando amnésia operacional a cada nova janela de contexto.
-* **Sem automação de ambiente de runtime:** O usuário precisa configurar manualmente portas CDP, isolamento de perfis de browser e contornar peculiaridades de Linux na unha.
+**However, out of the box, Antigravity is a raw power engine without a built-in Session Harness:**
+* **Competitors bundle proprietary sandboxes:** Tools like Claude Code, Devin, or Cursor enforce pre-configured guardrails. Antigravity provides atomic tools (`run_command`, `write_to_file`), but leaves session governance, persistence, and OS lifecycle entirely to the user.
+* **Lack of Long-Term Memory:** Sessions lack deterministic filesystem persistence, causing operational amnesia across context window compactions.
+* **Runtime Friction:** Developers have to manually configure CDP ports, browser profile isolation, and diagnose headless Linux edge cases.
 
-### As 4 Falhas Críticas de Agentes sem Governança:
+### The 4 Critical Failure Modes in Local AI Agents:
 
-1. **A Síndrome do "Agente Bêbado" no Terminal:** Agentes que ganham acesso a shell e executam comandos sem freio, alucinam diretórios, assumem que código funciona sem testar e entram em loops infinitos consumindo tokens.
-2. **Amnésia Operacional e Estouro de Contexto:** Conforme a conversa avança, o agente esquece o objetivo principal, descarta decisões arquiteturais combinadas e repete erros já cometidos.
-3. **Invasão e Risco no Navegador Pessoal:** Agentes que tentam interagir com a web sequestrando ou sujando o navegador pessoal do desenvolvedor, expondo cookies privados, abas de trabalho ou travando por falta de flags corretas.
-4. **O Abismo Mac vs Linux:** Automações que funcionam no macOS com interface gráfica quebram miseravelmente quando levadas para um servidor Linux, VPS, WSL2 ou container Docker (ausência de servidor X11/Wayland, crashes de memória em `/dev/shm` e permissões de sandbox).
-
----
-
-## 💡 A Solução: O Que o `antigravity-operator` Resolve
-
-O **`antigravity-operator`** (`agyo`) empacota toda a infraestrutura operacional, segurança e governança para que o seu agente atue como um **engenheiro de software e operador de sistemas sênior**:
-
-* **Outer Harness de Martin Fowler (Guia × Sensor):** O agente nunca assume nada sem evidência direta. Guias alimentam o agente antes da ação; sensores computacionais (`go test`, linters, verificação de runtime) validam a entrega antes de declarar a tarefa pronta.
-* **Memória Operacional Persistente (`.agents/session/`):** Transições de estado vivem no filesystem do projeto (`state.md`, `decisions.md`, `todo.md`). O agente mantém coerência perfeita mesmo se a janela de chat reiniciar.
-* **Isolamento Total do Chrome via DevTools MCP:** Lança uma instância dedicada do Chrome com porta de depuração (`9222`) e perfil isolado (`~/.gemini/antigravity-browser-profile`), garantindo zero poluição do seu navegador pessoal.
-* **Adaptação Inteligente Headless (Linux & Servidores):** Detecta dinamicamente a presença de display gráfico (`$DISPLAY` / `$WAYLAND_DISPLAY`). Se não houver tela, ativa automaticamente `--headless=new`, `--disable-dev-shm-usage` e `--no-sandbox`.
-* **Zero Runtime Dependencies (Single Binary Go):** Compilado em Go puro (`CGO_ENABLED=0`), gerando um executável estático único de ~6MB que você pode copiar para qualquer Linux ou Mac e rodar na hora, sem instalar Python, Node ou gerenciadores de pacotes.
+1. **The "Drunken Agent" Syndrome:** Agents with bash access running wild commands, hallucinating paths, assuming code works without testing, and entering infinite retry loops burning tokens.
+2. **Operational Amnesia & Context Drift:** As discussions grow, agents forget previous architectural agreements and repeat solved mistakes.
+3. **Personal Browser Hijacking & Security Risks:** Agents interacting with web pages by hijacking the developer's personal Chrome profile, exposing sensitive cookies or crashing active tabs.
+4. **The macOS vs Linux Chasm:** Automation scripts developed on macOS failing on Linux servers, VPSs, WSL2, or Docker due to missing graphical displays (`$DISPLAY`), `/dev/shm` memory constraints, or sandbox permission errors.
 
 ---
 
-## 🥊 Comparativo: Onde o `agyo` se Posiciona
+## 💡 The Solution: What `antigravity-operator` Solves
 
-| Recurso | Scripts Soltos / Bash | Claude Computer Use | Open-Interpreter | **Antigravity Operator (`agyo`)** |
+The **`antigravity-operator`** (`agyo`) wraps operating system infrastructure and governance around Antigravity:
+
+* **Martin Fowler Outer Harness (Guide × Sensor):** The agent operates strictly with no unverified assumptions. Deterministic rules guide the model before generation; computational sensors (`go test`, linters, runtime probes) validate every change before completion.
+* **Persistent Session Memory (`.agents/session/`):** State transitions are versioned directly in the project filesystem (`state.md`, `decisions.md`, `todo.md`). Memory survives context compactions and IDE restarts.
+* **Total Chrome Isolation via DevTools MCP:** Automatically manages an isolated Google Chrome instance (`~/.gemini/antigravity-browser-profile`) on debug port `9222`, keeping your personal browsing completely untouched.
+* **Dynamic Headless Mode (Linux & Servers):** Intelligently detects graphical displays (`$DISPLAY` / `$WAYLAND_DISPLAY`). If headless, it seamlessly injects `--headless=new`, `--disable-dev-shm-usage`, and `--no-sandbox`.
+* **Zero Runtime Dependencies (Single Binary Go):** Pure Go (`CGO_ENABLED=0`), generating a single static ~6MB binary that runs instantly on any macOS (Apple Silicon / Intel) or Linux (x86_64 / ARM64) distribution.
+
+---
+
+## 🥊 Landscape: How `agyo` Compares
+
+| Feature | Raw Bash Scripts | Claude Computer Use | Open-Interpreter | **Antigravity Operator (`agyo`)** |
 |---|---|---|---|---|
-| **Governança Outer Harness** | ❌ Não | ❌ Não | ❌ Não | **✅ Nativo (Guia × Sensor)** |
-| **Memória Operacional em Disco** | ❌ Não | ❌ Não | ❌ Não | **✅ `.agents/session/` Canônico** |
-| **Browser Profile Isolado** | ❌ Usa pessoal | ⚠️ Container pesado | ❌ Não | **✅ Perfil Dedicado Seguro** |
-| **Paridade macOS / Linux** | ⚠️ Quebra fácil | ⚠️ Docker-only | ⚠️ Conflito de deps | **✅ Nativo & Headless Auto** |
-| **Dependências de Instalação** | Múltiplas | Docker / APIs | Python / venv / pip | **✅ Binário Único Estático** |
-| **Sensor de Ambiente (`doctor`)** | ❌ Não | ❌ Não | ❌ Não | **✅ Integrado na CLI** |
+| **Outer Harness Governance** | ❌ No | ❌ No | ❌ No | **✅ Native (Guide × Sensor)** |
+| **Filesystem Session Memory** | ❌ No | ❌ No | ❌ No | **✅ Canonical `.agents/session/`** |
+| **Isolated Browser Profile** | ❌ Uses personal | ⚠️ Heavy Docker | ❌ No | **✅ Dedicated Profile (`9222`)** |
+| **macOS / Linux Parity** | ⚠️ Fragile | ⚠️ Docker-only | ⚠️ Dep conflicts | **✅ Native & Auto-Headless** |
+| **Runtime Footprint** | Multi-tooling | Docker / APIs | Python / venv | **✅ Single Static Binary (~6MB)** |
+| **Integrated Diagnostics (`doctor`)** | ❌ No | ❌ No | ❌ No | **✅ Built into CLI** |
 
 ---
 
-## 🎓 Caso de Uso de Destaque: Estudantes, Pesquisa & Google AI Pro
+## 🎓 Spotlight: Students, Researchers & Google AI Pro
 
-Para estudantes de tecnologia, computação e engenharia que utilizam os benefícios de planos acadêmicos como o **Google AI Pro**, o `antigravity-operator` se torna o multiplicador de aprendizado definitivo:
+For computer science students and researchers benefiting from academic programs like **Google AI Pro**, `agyo` is the ultimate productivity multiplier:
 
-1. **Eficiência de Cota e Zero Desperdício de Tokens:** Agentes desgovernados consom cotas generosas de API em minutos devido a loops de erro e alucinação. Com os princípios de *Outer Harness*, o consumo de tokens é cirúrgico e focado no problema real.
-2. **Ambiente Portátil para Laboratórios da Faculdade (Linux sem Root):** Computadores de universidades e centros de pesquisa rodam Linux onde o estudante não possui privilégios de administrador (`root`) para instalar Docker ou dependências globais. O binário estático `agyo-linux-amd64` roda direto da pasta do usuário (`~/`), sem necessitar de permissões especiais.
-3. **Diário de Bordo de Estudos & Portfólio:** A pasta `.agents/session/` registra o histórico técnico, trade-offs de algoritmos e decisões de código, servindo como documentação viva do aprendizado.
-4. **Laboratório Seguro:** Navegação via DevTools MCP com perfil isolado impede que o agente acesse contas pessoais, senhas ou dados da universidade.
+1. **Token Quota Conservation:** Prevents infinite loops and verbose repetitive code outputs, ensuring your Gemini Pro quota lasts the entire semester.
+2. **Zero-Root Portability in University Labs (Linux):** University labs often run locked-down Linux machines where students cannot install Docker or global packages. The static `agyo-linux-amd64` binary runs directly from user space (`~/`).
+3. **Academic Logbook & Portfolio:** The `.agents/session/` folder preserves architectural rationales and algorithm trade-offs, turning daily coding into documented learning logs.
+4. **Safe Sandbox:** Isolated Chrome automation protects personal university credentials and institutional logins.
 
-### 🎁 Skills para Estudantes Incluídas de Brinde (`skills/`):
-O repositório já inclui 3 skills prontas para acelerar a rotina acadêmica:
-* **`feynman-code-tutor`:** Tutor sênior baseado na Técnica Feynman. Explica algoritmos, estruturas de dados e Big-O com analogias do mundo real e perguntas de fixação.
-* **`student-study-planner`:** Decompõe ementas pesadas, projetos finais e matérias complexas em sprints gerenciáveis de estudo focado (20% teoria, 80% código).
-* **`token-budget-guard`:** Guardião cirúrgico que impede respostas repetitivas ou leitura desnecessária de arquivos, estendendo a longevidade da sua cota do Google AI Pro.
+### 🎁 Bonus Student Skills Included (`skills/`):
+This repository includes 3 canonical skills out-of-the-box:
+* **`feynman-code-tutor`:** Senior tutor based on the Feynman Technique. Explains complex algorithms, data structures, and Big-O using real-world analogies and comprehension checkpoints.
+* **`student-study-planner`:** Breaks down complex college syllabi, final projects, and technical interview prep into focused sprint cycles (20% theory, 80% deliberate coding).
+* **`token-budget-guard`:** Surgical token optimizer ensuring context efficiency and zero repetitive code waste.
 
 ---
 
-## 🏛️ Arquitetura Canônica (SRP, KISS, YAGNI, DRY)
+## 🏛️ Architecture (SRP, KISS, YAGNI, DRY)
 
 ```text
 antigravity-operator/
-├── cmd/agyo/                 # Entrypoint da CLI (main.go)
+├── cmd/agyo/                 # CLI entrypoint (main.go)
 ├── internal/
-│   ├── platform/             # SRP: Detecção de SO, display X11/Wayland e caminhos do Chrome
-│   ├── session/              # SRP: Scaffold da memória operacional (.agents/session/) e proteção de logs
-│   ├── profile/              # SRP: Gerenciamento do Chrome com perfil isolado e endpoint CDP 9222
-│   ├── installer/            # SRP: Sincronização idempotente de regras e manifestos MCP
-│   └── doctor/               # SRP: Sensor computacional de diagnóstico completo da máquina
-├── templates/                # Embutido no binário estático via //go:embed (zero dependências)
-│   ├── rules/                # Regras canônicas de Session Agent
-│   ├── session/              # Templates de state.md, decisions.md e todo.md
-│   └── mcps/                 # Manifesto de servidores MCP (DevTools, Playwright)
-├── agents/                   # Personas especializadas para engenharia assistida por IA
-├── docs/                     # Documentação de arquitetura e matriz cross-platform
-├── .github/workflows/        # CI automatizado de paridade macOS & Linux
+│   ├── platform/             # SRP: OS detection, X11/Wayland check, Chrome binary resolution
+│   ├── session/              # SRP: .agents/session/ scaffold & gitignore protection
+│   ├── profile/              # SRP: Chrome lifecycle management, PID tracking & CDP port
+│   ├── installer/            # SRP: Idempotent rule and MCP manifesto synchronization
+│   └── doctor/               # SRP: Machine diagnostic computational sensors
+├── templates/                # Embedded static assets via //go:embed (zero external deps)
+│   ├── rules/                # Canonical Session Agent rules
+│   ├── session/              # Templates for state.md, decisions.md, and todo.md
+│   └── mcps/                 # Default MCP servers manifest (DevTools, Playwright)
+├── agents/                   # Specialized AI personas (operator-architect, cdp-engineer, qa-sentinel)
+├── skills/                   # Bonus student skills (feynman tutor, study planner, token guard)
+├── docs/                     # In-depth architectural & cross-platform specs
+├── .github/workflows/        # Automated multi-OS CI (Ubuntu & macOS)
 ├── scripts/
-│   ├── bootstrap.sh          # Setup para usuários finais
-│   └── setup-dev.sh          # Setup de desenvolvimento e pre-commit hooks
-└── Makefile                  # Build nativo e cross-compilação para Linux
+│   ├── bootstrap.sh          # One-liner end-user setup
+│   └── setup-dev.sh          # Developer setup with pre-commit hooks
+└── Makefile                  # Native build and cross-compilation targets
 ```
 
 ---
 
-## 🤖 Assisted-IA & Ecossistema de Agentes
+## ⚡ Quick Start
 
-O projeto foi concebido sob o paradigma **Agent-as-Code** e traz governança de ponta:
-- **`AGENTS.md`:** Contrato operacional de conduta, diretrizes de código Go, checklist de sensores computacionais e convenções de commit para qualquer IA (Antigravity, Cursor, Claude, Copilot).
-- **Roster de Especialistas (`agents/`):**
-  - **`operator-architect`:** Guardião do sistema operacional, paridade macOS/Linux e princípios KISS/YAGNI.
-  - **`cdp-engineer`:** Especialista no Chrome DevTools Protocol, flags de browser e sockets de depuração.
-  - **`qa-sentinel`:** Responsável pelos testes automatizados e sensores de regressão.
-
----
-
-## ⚡ Instalação Rápida
-
-### Compilar localmente (Go 1.22+)
+### Build Locally (Go 1.22+)
 ```bash
-git clone https://github.com/tiagoboas/antigravity-operator.git
+git clone https://github.com/tiagovilasboas/antigravity-operator.git
 cd antigravity-operator
 make build
 ```
 
-O binário estará disponível em `bin/agyo`. Para instalar no seu `PATH`:
+The compiled binary will be placed at `bin/agyo` (with an `antigravity-operator` symlink). To install system-wide:
 ```bash
 make install
 ```
 
-### Cross-compilar para Linux a partir do Mac
+### Cross-Compile for Linux from macOS
 ```bash
 make build-linux
-# Binários estáticos gerados em bin/agyo-linux-amd64 e bin/agyo-linux-arm64
+# Static binaries generated at bin/agyo-linux-amd64 and bin/agyo-linux-arm64
 ```
 
 ---
 
-## 🚀 Como Usar
+## 🚀 CLI Usage
 
-### 1. Diagnosticar o ambiente da máquina (`doctor`)
-Audita se o sistema operacional, Git, Chrome, Node/NPX e conexões de harness estão prontos:
+### 1. Environment Diagnostics (`doctor`)
+Inspects system readiness across OS, Git, Chrome, Node/NPX, and Harness connections:
 ```bash
 agyo doctor
 ```
 
-Saída de exemplo:
+Example output:
 ```text
 🔍 Antigravity Operator Doctor [SO: darwin | Arch: arm64]
-🖥️  Ambiente Gráfico: Detectado (Desktop GUI)
+🖥️  Display Environment: Detected (Desktop GUI)
 -----------------------------------------------------------------
 ✅ Git                          : git version 2.39.5 (Apple Git-154) (Tiago Vilas Boas <tcarvalhovb@gmail.com>)
-✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-⚠️  Chrome DevTools (Port 9222)  : Inativo (execute 'agyo browser start' para iniciar)
-✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível
-✅ Harness Core                 : Conectado em /Users/tiago.boas/Github/harness-core
+✅ Google Chrome                : Found at: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+⚠️  Chrome DevTools (Port 9222)  : Inactive (run 'agyo browser start' to launch)
+✅ NPX (MCP Runtime)            : Version 10.8.2 available
+✅ Harness Core                 : Connected at /Users/tiago.boas/Github/harness-core
 -----------------------------------------------------------------
 ```
 
-### 2. Inicializar a memória operacional no projeto atual (`init`)
-Cria a pasta `.agents/session/` com rastreamento de estado, decisões e tarefas:
+### 2. Scaffold Operational Memory (`init`)
+Creates the `.agents/session/` memory structure in your current project:
 ```bash
-cd meu-projeto
+cd my-project
 agyo init
 ```
 
-Estrutura criada:
-- `.agents/session/state.md` (Objetivo e status em tempo real)
-- `.agents/session/decisions.md` (Log de premissas e trade-offs arquiteturais)
-- `.agents/session/todo.md` (Tarefas em andamento, pendentes e concluídas)
-- `.agents/.gitignore` (Protegendo logs e credenciais contra commits acidentais)
+Files created:
+- `.agents/session/state.md` (Real-time objective and status)
+- `.agents/session/decisions.md` (Architecture log and trade-offs)
+- `.agents/session/todo.md` (Task tracker)
+- `.agents/.gitignore` (Protects runtime logs and sensitive credentials)
 
-### 3. Gerenciar o Chrome isolado para o DevTools MCP (`browser`)
-Controla o ciclo de vida da instância exclusiva do Chrome para inspeção de DOM, rede e console com suporte a PID e parada graciosa:
+### 3. Manage Isolated Chrome Lifecycle (`browser`)
+Full process supervision with PID tracking and graceful shutdown:
 ```bash
-# Iniciar normalmente (abre janela no Mac/Linux desktop na porta 9222):
+# Launch isolated Chrome on port 9222 (Desktop GUI):
 agyo browser start
 
-# Iniciar em porta customizada:
+# Launch on a custom port:
 agyo browser start --port 9223
 
-# Forçar modo headless (automático em servidores Linux, VPS ou WSL2 sem tela):
+# Force headless mode (automatic on headless Linux servers, VPS, or WSL2):
 agyo browser start --headless
 
-# Verificar se a porta de debug e o PID estão ativos:
+# Check status and PID:
 agyo browser status
 
-# Encerrar graciosamente o processo do Chrome isolado (SIGTERM):
+# Gracefully terminate isolated Chrome instance (SIGTERM):
 agyo browser stop
 ```
 
-### 4. Sincronizar regras e MCPs no Antigravity (`sync`)
-Garante que as regras de governança e servidores de automação estejam instalados:
+### 4. Sync Rules and MCP Manifestos (`sync`)
+Provisions canonical rules and automation manifests into Google Antigravity:
 ```bash
 agyo sync
 ```
 
-### 5. Sobre o projeto e manifesto (`about`)
+### 5. Project Manifesto (`about`)
 ```bash
 agyo about
 ```
 
 ---
 
-## 🛡️ Princípios Operacionais Canônicos
+## 🛡️ Canonical Operational Rules
 
-Quando o Antigravity opera sob o `agyo`, ele segue 5 mandamentos:
-1. **Autonomia de Investigação:** Busca fatos no terminal, browser e logs antes de fazer perguntas triviais.
-2. **Orquestração Multiferramenta:** Identifica -> Investiga -> Implementa -> Testa -> Valida no Browser.
-3. **Validação Rigorosa:** A tarefa só termina quando o resultado foi validado de ponta a ponta com evidências.
-4. **Perfil Isolado:** Zero interferência ou exposição no Chrome pessoal do usuário.
-5. **Comunicação Concisa:** Direta ao ponto, técnica e fundamentada em dados.
+When operating under `agyo`, agents adhere to 5 core rules:
+1. **Autonomous Investigation:** Seek ground truth via shell, browser, and logs before asking trivia.
+2. **Multi-Tool Orchestration:** Identify -> Investigate -> Implement -> Test -> Validate in Browser.
+3. **Rigorous Validation:** Tasks are complete only after verified end-to-end evidence.
+4. **Profile Isolation:** Never compromise or access the user's personal browser profile.
+5. **Concise Communication:** Direct, technical, and grounded in empirical facts.
 
 ---
 
-## 📄 Licença
-Distribuído sob a licença [MIT](LICENSE).
+## 📄 License
+Distributed under the [MIT](LICENSE) License.

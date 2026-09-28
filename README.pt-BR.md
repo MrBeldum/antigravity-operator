@@ -1,0 +1,221 @@
+# Antigravity Operator (`agyo`)
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
+  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/Architecture-Single%20Binary%20(No%20CGO)-success?style=for-the-badge" alt="Binary" />
+  <img src="https://img.shields.io/badge/Pattern-Fowler%20Outer%20Harness-blueviolet?style=for-the-badge" alt="Pattern" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+</p>
+
+> **The Autonomous Session Agent Engine & OS Runtime**  
+> *Transforme o Google Antigravity e outros clientes de IA em operadores autônomos de sistema operacional (estilo Claude Computer Use / OS Agent), com governança rígida, memória de sessão persistente no disco e paridade total entre macOS e Linux.*
+
+---
+
+### 🎁 Um Presente de Engenharia para a Comunidade & para o Google
+
+> *"Este projeto é uma contribuição aberta da comunidade para todos os desenvolvedores, estudantes e pesquisadores, e um agradecimento especial ao **Google** pelo incentivo transformador concedido aos estudantes através do plano **Google AI Pro**."*  
+>  
+> Nosso objetivo é democratizar a engenharia de ponta: permitir que qualquer estudante ou desenvolvedor utilize 100% do poder do **Google Antigravity e dos modelos Gemini Pro** com rigor profissional, sem queimar cotas de API com loops desgovernados e com portabilidade absoluta para qualquer laboratório Linux ou macOS.
+
+---
+
+## 🔍 O Problema: Por Que o Antigravity Precisa de um Operator?
+
+O Google Antigravity é uma das plataformas de desenvolvimento assistido por IA mais poderosas da atualidade — possui ferramentas atômicas nativas de shell, edição cirúrgica, MCPs e subagentes. 
+
+**Porém, "de fábrica", o Antigravity é uma engine de força bruta sem um Harness de Sessão embutido:**
+* **Concorrentes já empacotam guard-rails:** Ferramentas como Claude Code, Devin ou Cursor possuem convenções prontas ou sandboxes fechadas. O Antigravity te entrega as ferramentas atômicas puras (`run_command`, `write_to_file`), mas **não entrega a camada de governança e controle de sessão**.
+* **Sem memória de longo prazo:** Ele não possui um protocolo nativo de persistência de estado no disco, gerando amnésia operacional a cada nova janela de contexto.
+* **Sem automação de ambiente de runtime:** O usuário precisa configurar manualmente portas CDP, isolamento de perfis de browser e contornar peculiaridades de Linux na unha.
+
+### As 4 Falhas Críticas de Agentes sem Governança:
+
+1. **A Síndrome do "Agente Bêbado" no Terminal:** Agentes que ganham acesso a shell e executam comandos sem freio, alucinam diretórios, assumem que código funciona sem testar e entram em loops infinitos consumindo tokens.
+2. **Amnésia Operacional e Estouro de Contexto:** Conforme a conversa avança, o agente esquece o objetivo principal, descarta decisões arquiteturais combinadas e repete erros já cometidos.
+3. **Invasão e Risco no Navegador Pessoal:** Agentes que tentam interagir com a web sequestrando ou sujando o navegador pessoal do desenvolvedor, expondo cookies privados, abas de trabalho ou travando por falta de flags corretas.
+4. **O Abismo Mac vs Linux:** Automações que funcionam no macOS com interface gráfica quebram miseravelmente quando levadas para um servidor Linux, VPS, WSL2 ou container Docker (ausência de servidor X11/Wayland, crashes de memória em `/dev/shm` e permissões de sandbox).
+
+---
+
+## 💡 A Solução: O Que o `antigravity-operator` Resolve
+
+O **`antigravity-operator`** (`agyo`) empacota toda a infraestrutura operacional, segurança e governança para que o seu agente atue como um **engenheiro de software e operador de sistemas sênior**:
+
+* **Outer Harness de Martin Fowler (Guia × Sensor):** O agente nunca assume nada sem evidência direta. Guias alimentam o agente antes da ação; sensores computacionais (`go test`, linters, verificação de runtime) validam a entrega antes de declarar a tarefa pronta.
+* **Memória Operacional Persistente (`.agents/session/`):** Transições de estado vivem no filesystem do projeto (`state.md`, `decisions.md`, `todo.md`). O agente mantém coerência perfeita mesmo se a janela de chat reiniciar.
+* **Isolamento Total do Chrome via DevTools MCP:** Lança uma instância dedicada do Chrome com porta de depuração (`9222`) e perfil isolado (`~/.gemini/antigravity-browser-profile`), garantindo zero poluição do seu navegador pessoal.
+* **Adaptação Inteligente Headless (Linux & Servidores):** Detecta dinamicamente a presença de display gráfico (`$DISPLAY` / `$WAYLAND_DISPLAY`). Se não houver tela, ativa automaticamente `--headless=new`, `--disable-dev-shm-usage` e `--no-sandbox`.
+* **Zero Runtime Dependencies (Single Binary Go):** Compilado em Go puro (`CGO_ENABLED=0`), gerando um executável estático único de ~6MB que você pode copiar para qualquer Linux ou Mac e rodar na hora, sem instalar Python, Node ou gerenciadores de pacotes.
+
+---
+
+## 🥊 Comparativo: Onde o `agyo` se Posiciona
+
+| Recurso | Scripts Soltos / Bash | Claude Computer Use | Open-Interpreter | **Antigravity Operator (`agyo`)** |
+|---|---|---|---|---|
+| **Governança Outer Harness** | ❌ Não | ❌ Não | ❌ Não | **✅ Nativo (Guia × Sensor)** |
+| **Memória Operacional em Disco** | ❌ Não | ❌ Não | ❌ Não | **✅ `.agents/session/` Canônico** |
+| **Browser Profile Isolado** | ❌ Usa pessoal | ⚠️ Container pesado | ❌ Não | **✅ Perfil Dedicado Seguro** |
+| **Paridade macOS / Linux** | ⚠️ Quebra fácil | ⚠️ Docker-only | ⚠️ Conflito de deps | **✅ Nativo & Headless Auto** |
+| **Dependências de Instalação** | Múltiplas | Docker / APIs | Python / venv / pip | **✅ Binário Único Estático** |
+| **Sensor de Ambiente (`doctor`)** | ❌ Não | ❌ Não | ❌ Não | **✅ Integrado na CLI** |
+
+---
+
+## 🎓 Caso de Uso de Destaque: Estudantes, Pesquisa & Google AI Pro
+
+Para estudantes de tecnologia, computação e engenharia que utilizam os benefícios de planos acadêmicos como o **Google AI Pro**, o `antigravity-operator` se torna o multiplicador de aprendizado definitivo:
+
+1. **Eficiência de Cota e Zero Desperdício de Tokens:** Agentes desgovernados consom cotas generosas de API em minutos devido a loops de erro e alucinação. Com os princípios de *Outer Harness*, o consumo de tokens é cirúrgico e focado no problema real.
+2. **Ambiente Portátil para Laboratórios da Faculdade (Linux sem Root):** Computadores de universidades e centros de pesquisa rodam Linux onde o estudante não possui privilégios de administrador (`root`) para instalar Docker ou dependências globais. O binário estático `agyo-linux-amd64` roda direto da pasta do usuário (`~/`), sem necessitar de permissões especiais.
+3. **Diário de Bordo de Estudos & Portfólio:** A pasta `.agents/session/` registra o histórico técnico, trade-offs de algoritmos e decisões de código, servindo como documentação viva do aprendizado.
+4. **Laboratório Seguro:** Navegação via DevTools MCP com perfil isolado impede que o agente acesse contas pessoais, senhas ou dados da universidade.
+
+### 🎁 Skills para Estudantes Incluídas de Brinde (`skills/`):
+O repositório já inclui 3 skills prontas para acelerar a rotina acadêmica:
+* **`feynman-code-tutor`:** Tutor sênior baseado na Técnica Feynman. Explica algoritmos, estruturas de dados e Big-O com analogias do mundo real e perguntas de fixação.
+* **`student-study-planner`:** Decompõe ementas pesadas, projetos finais e matérias complexas em sprints gerenciáveis de estudo focado (20% teoria, 80% código).
+* **`token-budget-guard`:** Guardião cirúrgico que impede respostas repetitivas ou leitura desnecessária de arquivos, estendendo a longevidade da sua cota do Google AI Pro.
+
+---
+
+## 🏛️ Arquitetura Canônica (SRP, KISS, YAGNI, DRY)
+
+```text
+antigravity-operator/
+├── cmd/agyo/                 # Entrypoint da CLI (main.go)
+├── internal/
+│   ├── platform/             # SRP: Detecção de SO, display X11/Wayland e caminhos do Chrome
+│   ├── session/              # SRP: Scaffold da memória operacional (.agents/session/) e proteção de logs
+│   ├── profile/              # SRP: Gerenciamento do Chrome com perfil isolado e endpoint CDP 9222
+│   ├── installer/            # SRP: Sincronização idempotente de regras e manifestos MCP
+│   └── doctor/               # SRP: Sensor computacional de diagnóstico completo da máquina
+├── templates/                # Embutido no binário estático via //go:embed (zero dependências)
+│   ├── rules/                # Regras canônicas de Session Agent
+│   ├── session/              # Templates de state.md, decisions.md e todo.md
+│   └── mcps/                 # Manifesto de servidores MCP (DevTools, Playwright)
+├── agents/                   # Personas especializadas para engenharia assistida por IA
+├── docs/                     # Documentação de arquitetura e matriz cross-platform
+├── .github/workflows/        # CI automatizado de paridade macOS & Linux
+├── scripts/
+│   ├── bootstrap.sh          # Setup para usuários finais
+│   └── setup-dev.sh          # Setup de desenvolvimento e pre-commit hooks
+└── Makefile                  # Build nativo e cross-compilação para Linux
+```
+
+---
+
+## 🤖 Assisted-IA & Ecossistema de Agentes
+
+O projeto foi concebido sob o paradigma **Agent-as-Code** e traz governança de ponta:
+- **`AGENTS.md`:** Contrato operacional de conduta, diretrizes de código Go, checklist de sensores computacionais e convenções de commit para qualquer IA (Antigravity, Cursor, Claude, Copilot).
+- **Roster de Especialistas (`agents/`):**
+  - **`operator-architect`:** Guardião do sistema operacional, paridade macOS/Linux e princípios KISS/YAGNI.
+  - **`cdp-engineer`:** Especialista no Chrome DevTools Protocol, flags de browser e sockets de depuração.
+  - **`qa-sentinel`:** Responsável pelos testes automatizados e sensores de regressão.
+
+---
+
+## ⚡ Instalação Rápida
+
+### Compilar localmente (Go 1.22+)
+```bash
+git clone https://github.com/tiagoboas/antigravity-operator.git
+cd antigravity-operator
+make build
+```
+
+O binário estará disponível em `bin/agyo`. Para instalar no seu `PATH`:
+```bash
+make install
+```
+
+### Cross-compilar para Linux a partir do Mac
+```bash
+make build-linux
+# Binários estáticos gerados em bin/agyo-linux-amd64 e bin/agyo-linux-arm64
+```
+
+---
+
+## 🚀 Como Usar
+
+### 1. Diagnosticar o ambiente da máquina (`doctor`)
+Audita se o sistema operacional, Git, Chrome, Node/NPX e conexões de harness estão prontos:
+```bash
+agyo doctor
+```
+
+Saída de exemplo:
+```text
+🔍 Antigravity Operator Doctor [SO: darwin | Arch: arm64]
+🖥️  Ambiente Gráfico: Detectado (Desktop GUI)
+-----------------------------------------------------------------
+✅ Git                          : git version 2.39.5 (Apple Git-154) (Tiago Vilas Boas <tcarvalhovb@gmail.com>)
+✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+⚠️  Chrome DevTools (Port 9222)  : Inativo (execute 'agyo browser start' para iniciar)
+✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível
+✅ Harness Core                 : Conectado em /Users/tiago.boas/Github/harness-core
+-----------------------------------------------------------------
+```
+
+### 2. Inicializar a memória operacional no projeto atual (`init`)
+Cria a pasta `.agents/session/` com rastreamento de estado, decisões e tarefas:
+```bash
+cd meu-projeto
+agyo init
+```
+
+Estrutura criada:
+- `.agents/session/state.md` (Objetivo e status em tempo real)
+- `.agents/session/decisions.md` (Log de premissas e trade-offs arquiteturais)
+- `.agents/session/todo.md` (Tarefas em andamento, pendentes e concluídas)
+- `.agents/.gitignore` (Protegendo logs e credenciais contra commits acidentais)
+
+### 3. Gerenciar o Chrome isolado para o DevTools MCP (`browser`)
+Controla o ciclo de vida da instância exclusiva do Chrome para inspeção de DOM, rede e console com suporte a PID e parada graciosa:
+```bash
+# Iniciar normalmente (abre janela no Mac/Linux desktop na porta 9222):
+agyo browser start
+
+# Iniciar em porta customizada:
+agyo browser start --port 9223
+
+# Forçar modo headless (automático em servidores Linux, VPS ou WSL2 sem tela):
+agyo browser start --headless
+
+# Verificar se a porta de debug e o PID estão ativos:
+agyo browser status
+
+# Encerrar graciosamente o processo do Chrome isolado (SIGTERM):
+agyo browser stop
+```
+
+### 4. Sincronizar regras e MCPs no Antigravity (`sync`)
+Garante que as regras de governança e servidores de automação estejam instalados:
+```bash
+agyo sync
+```
+
+### 5. Sobre o projeto e manifesto (`about`)
+```bash
+agyo about
+```
+
+---
+
+## 🛡️ Princípios Operacionais Canônicos
+
+Quando o Antigravity opera sob o `agyo`, ele segue 5 mandamentos:
+1. **Autonomia de Investigação:** Busca fatos no terminal, browser e logs antes de fazer perguntas triviais.
+2. **Orquestração Multiferramenta:** Identifica -> Investiga -> Implementa -> Testa -> Valida no Browser.
+3. **Validação Rigorosa:** A tarefa só termina quando o resultado foi validado de ponta a ponta com evidências.
+4. **Perfil Isolado:** Zero interferência ou exposição no Chrome pessoal do usuário.
+5. **Comunicação Concisa:** Direta ao ponto, técnica e fundamentada em dados.
+
+---
+
+## 📄 Licença
+Distribuído sob a licença [MIT](LICENSE).
