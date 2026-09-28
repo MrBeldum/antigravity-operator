@@ -1,7 +1,7 @@
 # Binários compilados
 bin/
-agyo
-agyo-*
+/agyo
+/agyo-*
 *.exe
 *.test
 
