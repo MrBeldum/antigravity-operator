@@ -57,12 +57,26 @@ func findChromeBinary(osName string) string {
 		}
 	}
 
-	// Tenta binários disponíveis no PATH (comum em Linux e macOS com brew/symlink)
+	if osName == "windows" {
+		winCandidates := []string{
+			os.Getenv("ProgramFiles") + `\Google\Chrome\Application\chrome.exe`,
+			os.Getenv("ProgramFiles(x86)") + `\Google\Chrome\Application\chrome.exe`,
+			os.Getenv("LocalAppData") + `\Google\Chrome\Application\chrome.exe`,
+		}
+		for _, p := range winCandidates {
+			if _, err := os.Stat(p); err == nil {
+				return p
+			}
+		}
+	}
+
+	// Tenta binários disponíveis no PATH (comum em Linux, macOS com brew/symlink e Windows)
 	candidates := []string{
 		"google-chrome",
 		"google-chrome-stable",
 		"chromium",
 		"chromium-browser",
+		"chrome.exe",
 	}
 
 	for _, c := range candidates {

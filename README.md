@@ -13,6 +13,14 @@
 
 ---
 
+### 🎁 Um Presente de Engenharia para a Comunidade & para o Google
+
+> *"Este projeto é uma contribuição aberta da comunidade para todos os desenvolvedores, estudantes e pesquisadores, e um agradecimento especial ao **Google** pelo incentivo transformador concedido aos estudantes através do plano **Google AI Pro**."*  
+>  
+> Nosso objetivo é democratizar a engenharia de ponta: permitir que qualquer estudante ou desenvolvedor utilize 100% do poder do **Google Antigravity e dos modelos Gemini Pro** com rigor profissional, sem queimar cotas de API com loops desgovernados e com portabilidade absoluta para qualquer laboratório Linux ou macOS.
+
+---
+
 ## 🔍 O Problema: Por Que o Antigravity Precisa de um Operator?
 
 O Google Antigravity é uma das plataformas de desenvolvimento assistido por IA mais poderosas da atualidade — possui ferramentas atômicas nativas de shell, edição cirúrgica, MCPs e subagentes. 
@@ -160,23 +168,34 @@ Estrutura criada:
 - `.agents/session/todo.md` (Tarefas em andamento, pendentes e concluídas)
 - `.agents/.gitignore` (Protegendo logs e credenciais contra commits acidentais)
 
-### 3. Iniciar o Chrome isolado para o DevTools MCP (`browser start`)
-Sobe uma instância exclusiva do Chrome para o agente inspecionar DOM, rede e console:
+### 3. Gerenciar o Chrome isolado para o DevTools MCP (`browser`)
+Controla o ciclo de vida da instância exclusiva do Chrome para inspeção de DOM, rede e console com suporte a PID e parada graciosa:
 ```bash
-# Iniciar normalmente (abre janela no Mac/Linux desktop):
+# Iniciar normalmente (abre janela no Mac/Linux desktop na porta 9222):
 agyo browser start
 
-# Forçar modo headless (útil para servidores, CI ou WSL2 sem tela):
+# Iniciar em porta customizada:
+agyo browser start --port 9223
+
+# Forçar modo headless (automático em servidores Linux, VPS ou WSL2 sem tela):
 agyo browser start --headless
 
-# Verificar se a porta de debug está ativa:
+# Verificar se a porta de debug e o PID estão ativos:
 agyo browser status
+
+# Encerrar graciosamente o processo do Chrome isolado (SIGTERM):
+agyo browser stop
 ```
 
 ### 4. Sincronizar regras e MCPs no Antigravity (`sync`)
 Garante que as regras de governança e servidores de automação estejam instalados:
 ```bash
 agyo sync
+```
+
+### 5. Sobre o projeto e manifesto (`about`)
+```bash
+agyo about
 ```
 
 ---

@@ -7,6 +7,10 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
@@ -14,7 +18,7 @@ import (
 
 const (
 	DefaultDebugPort = 9222
-	VersionEndpoint  = "http://127.0.0.1:9222/json/version"
+	PIDFileName      = "chrome.pid"
 )
 
 // ChromeVersionResponse reflete a resposta do endpoint /json/version do Chrome.
@@ -31,20 +35,28 @@ type ChromeVersionResponse struct {
 type Status struct {
 	IsRunning  bool
 	Port       int
+	PID        int
 	Version    string
 	ProfileDir string
 	Headless   bool
 }
 
-// CheckStatus verifica se a porta 9222 está ativa e respondendo com a API DevTools.
+// CheckStatus verifica se a porta padrão está ativa e respondendo com a API DevTools.
 func CheckStatus(profileDir string) Status {
+	return CheckStatusOnPort(profileDir, DefaultDebugPort)
+}
+
+// CheckStatusOnPort verifica uma porta específica.
+func CheckStatusOnPort(profileDir string, port int) Status {
 	st := Status{
-		Port:       DefaultDebugPort,
+		Port:       port,
 		ProfileDir: profileDir,
+		PID:        ReadPID(profileDir),
 	}
 
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/json/version", port)
 	client := http.Client{Timeout: 800 * time.Millisecond}
-	resp, err := client.Get(VersionEndpoint)
+	resp, err := client.Get(endpoint)
 	if err != nil {
 		st.IsRunning = false
 		return st
@@ -64,6 +76,7 @@ func CheckStatus(profileDir string) Status {
 
 // StartOptions configura a inicialização do Chrome isolado.
 type StartOptions struct {
+	Port          int
 	ForceHeadless bool
 }
 
@@ -73,21 +86,26 @@ func Start(info *platform.Info, opts StartOptions) error {
 		return fmt.Errorf("binário do Google Chrome / Chromium não encontrado no sistema")
 	}
 
+	port := opts.Port
+	if port <= 0 {
+		port = DefaultDebugPort
+	}
+
 	// 1. Assegurar que o diretório de perfil existe
 	if err := os.MkdirAll(info.BrowserProfile, 0755); err != nil {
 		return fmt.Errorf("falha ao criar pasta de perfil isolado: %w", err)
 	}
 
-	// 2. Se já estiver rodando, nada a fazer
-	current := CheckStatus(info.BrowserProfile)
+	// 2. Se já estiver rodando na porta solicitada, nada a fazer
+	current := CheckStatusOnPort(info.BrowserProfile, port)
 	if current.IsRunning {
 		return nil // já está ativo e operando
 	}
 
-	// 3. Montar flags
+	// 3. Montar flags do Chrome
 	args := []string{
 		fmt.Sprintf("--user-data-dir=%s", info.BrowserProfile),
-		fmt.Sprintf("--remote-debugging-port=%d", DefaultDebugPort),
+		fmt.Sprintf("--remote-debugging-port=%d", port),
 		"--no-first-run",
 		"--no-default-browser-check",
 	}
@@ -104,9 +122,14 @@ func Start(info *platform.Info, opts StartOptions) error {
 	}
 
 	cmd := exec.Command(info.ChromeBin, args...)
-	// Desacoplar processo para rodar em background
+	// Desacoplar processo para rodar em background de forma independente
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("falha ao iniciar processo do Chrome: %w", err)
+	}
+
+	// Grava o PID para gerenciamento de ciclo de vida e parada graciosa
+	if cmd.Process != nil {
+		_ = SavePID(info.BrowserProfile, cmd.Process.Pid)
 	}
 
 	// 4. Aguardar até 5 segundos para o endpoint responder
@@ -116,12 +139,80 @@ func Start(info *platform.Info, opts StartOptions) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("tempo limite excedido aguardando Chrome responder na porta %d", DefaultDebugPort)
+			return fmt.Errorf("tempo limite excedido aguardando Chrome responder na porta %d", port)
 		default:
-			if CheckStatus(info.BrowserProfile).IsRunning {
+			if CheckStatusOnPort(info.BrowserProfile, port).IsRunning {
 				return nil
 			}
 			time.Sleep(200 * time.Millisecond)
 		}
 	}
+}
+
+// Stop encerra graciosamente o processo do Chrome isolado usando o arquivo de PID.
+func Stop(info *platform.Info) error {
+	pid := ReadPID(info.BrowserProfile)
+	pidFile := filepath.Join(info.BrowserProfile, PIDFileName)
+
+	if pid <= 0 {
+		// Se não há PID salvo mas a porta está ativa, avisa
+		st := CheckStatus(info.BrowserProfile)
+		if st.IsRunning {
+			return fmt.Errorf("Chrome está ativo na porta %d, mas o PID não foi encontrado em %s. Encerre o processo manualmente", st.Port, pidFile)
+		}
+		return nil // Nada para parar
+	}
+
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		_ = os.Remove(pidFile)
+		return nil
+	}
+
+	// Enviar SIGTERM para finalização graciosa
+	_ = process.Signal(syscall.SIGTERM)
+
+	// Aguardar até 3 segundos para confirmar que o processo encerrou
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		if !isProcessAlive(pid) {
+			_ = os.Remove(pidFile)
+			return nil
+		}
+		time.Sleep(150 * time.Millisecond)
+	}
+
+	// Se ainda estiver vivo após o timeout, força SIGKILL
+	_ = process.Signal(syscall.SIGKILL)
+	_ = os.Remove(pidFile)
+	return nil
+}
+
+// ReadPID lê o PID gravado no diretório de perfil.
+func ReadPID(profileDir string) int {
+	pidFile := filepath.Join(profileDir, PIDFileName)
+	data, err := os.ReadFile(pidFile)
+	if err != nil {
+		return 0
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(data)))
+	if err != nil {
+		return 0
+	}
+	return pid
+}
+
+// SavePID grava o PID no diretório de perfil.
+func SavePID(profileDir string, pid int) error {
+	pidFile := filepath.Join(profileDir, PIDFileName)
+	return os.WriteFile(pidFile, []byte(strconv.Itoa(pid)), 0644)
+}
+
+func isProcessAlive(pid int) bool {
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+	// No Unix, Signal 0 testa existência sem enviar sinal real
+	return process.Signal(syscall.Signal(0)) == nil
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/tiagoboas/antigravity-operator/internal/session"
 )
 
-const Version = "0.1.0"
+const Version = "0.2.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -37,6 +37,8 @@ func main() {
 		runBrowser(info, os.Args[2:])
 	case "sync":
 		runSync(info)
+	case "about":
+		printAbout()
 	case "version", "-v", "--version":
 		fmt.Printf("agyo (Antigravity Operator) v%s [%s/%s]\n", Version, info.OS, info.Arch)
 	case "help", "-h", "--help":
@@ -50,6 +52,7 @@ func main() {
 
 func printUsage() {
 	fmt.Println(`agyo - Antigravity Operator CLI (Autonomous Session Agent Engine)
+The Official Community Outer Harness for Google Antigravity & Google AI Pro
 
 Uso:
   agyo <comando> [argumentos]
@@ -58,9 +61,30 @@ Comandos disponíveis:
   init [dir]          Inicializa a memória operacional (.agents/session/) no projeto
   doctor              Audita a saúde da máquina (OS, Chrome, DevTools 9222, Git, Node)
   browser start       Inicia o Chrome isolado com remote debugging e flags corretas
-  browser status      Verifica a integridade da porta DevTools (9222)
+  browser status      Verifica a integridade da porta DevTools (9222) e PID do Chrome
+  browser stop        Encerra graciosamente o processo do Chrome isolado (SIGTERM)
   sync                Sincroniza regras globais e MCPs canônicos no Antigravity
+  about               Manifesto e dedicatória à comunidade e ao Google
   version             Exibe a versão do operador e arquitetura do sistema`)
+}
+
+func printAbout() {
+	fmt.Println(`================================================================================
+  ANTIGRAVITY OPERATOR (agyo) — RUNTIME & OUTER HARNESS DE SESSÃO
+================================================================================
+
+Este projeto é um presente de engenharia para a comunidade de desenvolvedores,
+estudantes e pesquisadores, e um agradecimento especial ao Google pelo plano de
+incentivo aos estudantes através do Google AI Pro.
+
+Missão:
+Transformar a força bruta atômica do Google Antigravity em um Session Agent
+autônomo, seguro, com persistência de memória no disco (.agents/session/) e paridade
+absoluta entre macOS e Linux — permitindo que qualquer estudante ou engenheiro
+aproveite 100% da cota do Gemini Pro sem desperdício de tokens e sem fricção.
+
+Desenvolvido com carinho e rigor de engenharia (Martin Fowler Outer Harness).
+================================================================================`)
 }
 
 func runInit(args []string) {
@@ -117,7 +141,7 @@ func runDoctor(info *platform.Info) {
 
 func runBrowser(info *platform.Info, args []string) {
 	if len(args) == 0 {
-		fmt.Println("Uso: agyo browser [start|status]")
+		fmt.Println("Uso: agyo browser [start|status|stop]")
 		os.Exit(1)
 	}
 
@@ -126,7 +150,11 @@ func runBrowser(info *platform.Info, args []string) {
 	case "status":
 		st := profile.CheckStatus(info.BrowserProfile)
 		if st.IsRunning {
-			fmt.Printf("✅ Chrome DevTools ATIVO na porta %d (%s)\n", st.Port, st.Version)
+			pidInfo := ""
+			if st.PID > 0 {
+				pidInfo = fmt.Sprintf(" [PID: %d]", st.PID)
+			}
+			fmt.Printf("✅ Chrome DevTools ATIVO na porta %d (%s)%s\n", st.Port, st.Version, pidInfo)
 			fmt.Printf("   Perfil isolado: %s\n", st.ProfileDir)
 		} else {
 			fmt.Printf("⚠️  Chrome DevTools INATIVO na porta %d\n", st.Port)
@@ -135,17 +163,27 @@ func runBrowser(info *platform.Info, args []string) {
 	case "start":
 		browserCmd := flag.NewFlagSet("browser start", flag.ExitOnError)
 		headless := browserCmd.Bool("headless", false, "Forçar modo headless mesmo com display")
+		port := browserCmd.Int("port", profile.DefaultDebugPort, "Porta de remote debugging do Chrome")
 		_ = browserCmd.Parse(args[1:])
 
-		fmt.Println("🚀 Iniciando Chrome isolado para o Session Agent...")
+		fmt.Printf("🚀 Iniciando Chrome isolado para o Google Antigravity na porta %d...\n", *port)
 		err := profile.Start(info, profile.StartOptions{
+			Port:          *port,
 			ForceHeadless: *headless,
 		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Erro ao iniciar browser: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("✅ Chrome isolado ativo com sucesso na porta 9222!")
+		fmt.Printf("✅ Chrome isolado ativo com sucesso na porta %d!\n", *port)
+	case "stop":
+		fmt.Println("🛑 Encerrando instância isolada do Chrome...")
+		err := profile.Stop(info)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Aviso ao encerrar browser: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("✅ Chrome isolado encerrado com sucesso.")
 	default:
 		fmt.Fprintf(os.Stderr, "Subcomando de browser desconhecido: %s\n", sub)
 		os.Exit(1)
@@ -153,7 +191,7 @@ func runBrowser(info *platform.Info, args []string) {
 }
 
 func runSync(info *platform.Info) {
-	fmt.Println("🔄 Sincronizando regras e manifestos do Session Agent...")
+	fmt.Println("🔄 Sincronizando regras e manifestos do Session Agent no Google Antigravity...")
 	res, err := installer.Sync(info)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Erro na sincronização: %v\n", err)
