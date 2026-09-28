@@ -56,6 +56,17 @@ O **`antigravity-operator`** (`agyo`) empacota toda a infraestrutura operacional
 
 ---
 
+## 🎓 Caso de Uso de Destaque: Estudantes, Pesquisa & Google AI Pro
+
+Para estudantes de tecnologia, computação e engenharia que utilizam os benefícios de planos acadêmicos como o **Google AI Pro**, o `antigravity-operator` se torna o multiplicador de aprendizado definitivo:
+
+1. **Eficiência de Cota e Zero Desperdício de Tokens:** Agentes desgovernados consom cotas generosas de API em minutos devido a loops de erro e alucinação. Com os princípios de *Outer Harness*, o consumo de tokens é cirúrgico e focado no problema real.
+2. **Ambiente Portátil para Laboratórios da Faculdade (Linux sem Root):** Computadores de universidades e centros de pesquisa rodam Linux onde o estudante não possui privilégios de administrador (`root`) para instalar Docker ou dependências globais. O binário estático `agyo-linux-amd64` roda direto da pasta do usuário (`~/`), sem necessitar de permissões especiais.
+3. **Diário de Bordo de Estudos & Portfólio:** A pasta `.agents/session/` registra o histórico técnico, trade-offs de algoritmos e decisões de código, servindo como documentação viva do aprendizado.
+4. **Laboratório Seguro:** Navegação via DevTools MCP com perfil isolado impede que o agente acesse contas pessoais, senhas ou dados da universidade.
+
+---
+
 ## 🏛️ Arquitetura Canônica (SRP, KISS, YAGNI, DRY)
 
 ```text
