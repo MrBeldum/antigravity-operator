@@ -235,5 +235,55 @@ Quando o Antigravity opera sob o `agyo`, ele segue 5 mandamentos:
 
 ---
 
-## 📄 Licença
-Distribuído sob a licença [MIT](LICENSE).
+## 🤝 Como Contribuir
+
+Contribuições de engenheiros, estudantes e entusiastas de open source são muito bem-vindas! Seja corrigindo bugs, aprimorando a documentação ou criando novas skills.
+
+### Fluxo de Contribuição em 5 Passos:
+1. **Fork & Clone:**
+   ```bash
+   git clone https://github.com/tiagovilasboas/antigravity-operator.git
+   cd antigravity-operator
+   ```
+2. **Setup Automatizado de Dev (configura hooks de pre-commit):**
+   ```bash
+   ./scripts/setup-dev.sh
+   ```
+3. **Crie uma Branch de Funcionalidade:**
+   ```bash
+   git checkout -b feat/sua-funcionalidade
+   ```
+4. **Execute os Sensores e Testes:**
+   ```bash
+   go vet ./...
+   go test -v -race ./...
+   make build
+   ./bin/agyo doctor
+   ```
+5. **Abra um Pull Request:** Siga o padrão [Conventional Commits](https://www.conventionalcommits.org/) em inglês e submeta seu PR.
+
+### 💡 Ideias de Contribuição de Alto Impacto:
+* **Skills para Estudantes:** Crie novas skills acadêmicas na pasta `skills/` (ex: tutor de grafos, revisor de monografia/TCC).
+* **Integrações de MCP:** Adicione templates de servidores MCP úteis em `templates/mcps/`.
+* **Testes em Outras Distribuições Linux:** Documente a compatibilidade no Arch Linux, Alpine, Fedora ou NixOS.
+
+Consulte também [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [AUTHORS](AUTHORS) e [CONTRIBUTORS](CONTRIBUTORS).
+
+---
+
+## 💖 Sponsor & Apoie o Projeto
+
+Este projeto é uma iniciativa independente e de código aberto criada para empoderar estudantes e desenvolvedores que utilizam o ecossistema Google AI e Google Antigravity.
+
+Se o `antigravity-operator` economizou seu tempo, protegeu sua cota de tokens ou ajudou em seus estudos:
+
+* ⭐ **Deixe uma Estrela (Star) no Repositório:** É a forma mais fácil e direta de ajudar o projeto a alcançar mais pessoas e chamar a atenção do time do Google.
+* 💖 **Patrocine no GitHub Sponsors:** Ajude a custear os servidores de integração contínua e testes multi-OS através do [GitHub Sponsors](https://github.com/sponsors/tiagovilasboas).
+* 🗣️ **Compartilhe com sua Comunidade:** Fale sobre o projeto no LinkedIn, X/Twitter, Discord ou grupos de estudo da faculdade.
+
+---
+
+## 🔒 Segurança e Licença
+
+* **Política de Segurança:** Consulte [SECURITY.md](SECURITY.md) para diretrizes de divulgação responsável de vulnerabilidades.
+* **Licença:** Distribuído sob a licença [MIT](LICENSE).

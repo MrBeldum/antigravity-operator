@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/Architecture-Single%20Binary%20(No%20CGO)-success?style=for-the-badge" alt="Binary" />
   <img src="https://img.shields.io/badge/Pattern-Fowler%20Outer%20Harness-blueviolet?style=for-the-badge" alt="Pattern" />
+  <img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors" alt="Sponsor" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
@@ -12,7 +13,7 @@
 > *Deterministic governance, filesystem operational memory, and Chrome DevTools isolation with seamless parity across macOS and Linux.*
 
 <p align="center">
-  <a href="README.pt-BR.md">🇧🇷 <b>Leia em Português</b></a> | <a href="#-getting-started--installation"><b>Getting Started</b></a> | <a href="#-student--google-ai-pro-edition"><b>Student Edition</b></a> | <a href="CONTRIBUTING.md"><b>Contributing</b></a>
+  <a href="README.pt-BR.md">🇧🇷 <b>Leia em Português</b></a> | <a href="#-getting-started--installation"><b>Getting Started</b></a> | <a href="#-student-research--google-ai-pro-edition"><b>Student Edition</b></a> | <a href="#-sponsor--support"><b>Sponsor</b></a> | <a href="#-how-to-contribute"><b>Contributing</b></a>
 </p>
 
 > **Disclaimer:** *This is an open source community-driven companion project and is not an officially sponsored Google product. It is built to extend and empower the Google Antigravity & Google AI developer ecosystem.*
@@ -30,7 +31,8 @@
 - [System Architecture (SRP, KISS, YAGNI, DRY)](#-system-architecture-srp-kiss-yagni-dry)
 - [Getting Started & Installation](#-getting-started--installation)
 - [CLI Reference & Usage](#-cli-reference--usage)
-- [Contributing & Community Standards](#-contributing--community-standards)
+- [How to Contribute](#-how-to-contribute)
+- [Sponsor & Support](#-sponsor--support)
 - [Security & License](#-security--license)
 
 ---
@@ -225,16 +227,55 @@ agyo about
 
 ---
 
-## 🤝 Contributing & Community Standards
+## 🤝 How to Contribute
 
-We welcome contributions! Please review:
-* [CONTRIBUTING.md](CONTRIBUTING.md) — Step-by-step contribution and testing workflow.
-* [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Adapted from Contributor Covenant and Google Open Source Guidelines.
-* [AUTHORS](AUTHORS) & [CONTRIBUTORS](CONTRIBUTORS) — List of project maintainers and contributors.
+We welcome contributions from engineers, students, and open-source enthusiasts! Whether fixing bugs, improving docs, or adding new skills, your help is appreciated.
+
+### 5-Step Contribution Workflow:
+1. **Fork & Clone:**
+   ```bash
+   git clone https://github.com/tiagovilasboas/antigravity-operator.git
+   cd antigravity-operator
+   ```
+2. **Automated Dev Setup (installs pre-commit hooks):**
+   ```bash
+   ./scripts/setup-dev.sh
+   ```
+3. **Create a Feature Branch:**
+   ```bash
+   git checkout -b feat/your-awesome-feature
+   ```
+4. **Run Sensors & Tests:**
+   ```bash
+   go vet ./...
+   go test -v -race ./...
+   make build
+   ./bin/agyo doctor
+   ```
+5. **Open a Pull Request:** Follow [Conventional Commits](https://www.conventionalcommits.org/) in English and submit your PR.
+
+### 💡 High-Impact Contribution Ideas:
+* **Student Skills:** Add new learning or research skills to `skills/` (e.g., dynamic programming tutor, thesis literature reviewer).
+* **MCP Integrations:** Create templates for popular community Model Context Protocol servers in `templates/mcps/`.
+* **Linux Distribution Testing:** Verify and document compatibility on Arch Linux, Alpine, Fedora, or NixOS.
+
+Please review our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [AUTHORS](AUTHORS), and [CONTRIBUTORS](CONTRIBUTORS).
+
+---
+
+## 💖 Sponsor & Support
+
+This project is an independent open-source initiative built to empower students and developers utilizing Google AI and Google Antigravity.
+
+If `antigravity-operator` saved you time, protected your API token quota, or helped your academic research:
+
+* ⭐ **Star the Repository:** The easiest and most effective way to help the project reach more students and catch Google's attention.
+* 💖 **Sponsor on GitHub:** Help fund continuous integration compute and multi-OS testing instances via [GitHub Sponsors](https://github.com/sponsors/tiagovilasboas).
+* 🗣️ **Share with Your Community:** Post about your experience on LinkedIn, X/Twitter, Discord, or university study groups.
 
 ---
 
 ## 🔒 Security & License
 
-* **Security Policy:** Refer to [SECURITY.md](SECURITY.md) for vulnerability disclosure guidelines.
+* **Security Policy:** Refer to [SECURITY.md](SECURITY.md) for responsible vulnerability disclosure guidelines.
 * **License:** Distributed under the [MIT](LICENSE) License.
