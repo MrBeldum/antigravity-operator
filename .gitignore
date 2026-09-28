@@ -1,0 +1,21 @@
+# Binários compilados
+bin/
+agyo
+agyo-*
+*.exe
+*.test
+
+# IDEs e OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Ambientes e segredos
+.env
+.env.*
+!.env.example
+
+# Perfis locais de teste
+tmp/
+*.log

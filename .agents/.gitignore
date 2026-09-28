@@ -1,0 +1,6 @@
+# Proteção de dados operacionais e temporários do agente
+*.log
+tmp/
+cache/
+*.dump
+credentials*
