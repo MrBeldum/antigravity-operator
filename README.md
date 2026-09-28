@@ -284,7 +284,9 @@ If `antigravity-operator` saved you time, protected your API token quota, or hel
 
 ---
 
-## 🔒 Security & License
+## 🔒 Security, Privacy & License
 
 * **Security Policy:** Refer to [SECURITY.md](SECURITY.md) for responsible vulnerability disclosure guidelines.
+* **Privacy & LGPD Compliance:** Refer to [PRIVACY.md](PRIVACY.md) for our zero-telemetry, local-first data protection policy (LGPD & GDPR).
 * **License:** Distributed under the [MIT](LICENSE) License.
+

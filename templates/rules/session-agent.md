@@ -41,6 +41,11 @@ Mantenha a persistência do estado e decisões da sessão na pasta `.agents/sess
 - `.agents/session/todo.md`: Lista de tarefas estruturadas (concluídas, em progresso e pendentes).
 Atualize esses arquivos sempre que ocorrer uma transição de estado relevante para garantir continuidade entre janelas de contexto.
 
+## Privacidade, LGPD & Segurança de Dados
+- **Zero PII em Sessão:** Nunca registre dados pessoais identificáveis (PII, CPFs, e-mails de clientes reais, cartões, telefones, senhas ou tokens) nos arquivos de sessão (`.agents/session/`) ou em mensagens de commit.
+- **Minimização de Dados (Art. 6º LGPD):** Toda persistência de contexto deve conter estritamente metadados operacionais de engenharia (arquitetura, decisões técnicas, tarefas e status).
+- **Ambiente Sintético:** Para depuração e testes com o browser ou banco de dados, utilize sempre fixtures, mocks ou dados anonimizados.
+
 ## Outer Harness (Fowler) & Governança
 1. **Outer Harness (Guia × Sensor):**
    - Guias (feedforward): Steerings, skills, convenções e regras aplicadas antes da geração de código.
@@ -54,3 +59,4 @@ Atualize esses arquivos sempre que ocorrer uma transição de estado relevante p
    - Leituras cirúrgicas com `view_file` delimitado (StartLine/EndLine). Não carregue arquivos gigantes desnecessariamente.
 5. **Comunicação Concisa em PT-BR:**
    - Respostas objetivas, diretas e com evidências técnicas verificadas.
+

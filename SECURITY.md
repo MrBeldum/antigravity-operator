@@ -19,3 +19,12 @@ The Antigravity Operator team takes security seriously. If you discover a securi
    * Any suggested mitigations.
 
 You will receive an acknowledgment within 48 hours, followed by updates on the assessment and timeline for a patch.
+
+## Privacy & Data Protection (LGPD & GDPR)
+
+Antigravity Operator follows strict **Privacy by Design** principles:
+- **Zero Telemetry:** No user data, code, or metrics are collected or transmitted.
+- **Local Sovereignty:** All state is stored exclusively on your local machine.
+- **Isolated Browser Profile:** Automation runs in an isolated user directory (`~/.gemini/antigravity-browser-profile`) without accessing personal credentials or browser history.
+
+For our full compliance declaration with the Brazilian General Data Protection Law (**LGPD - Lei 13.709/2018**) and GDPR, see [PRIVACY.md](PRIVACY.md).

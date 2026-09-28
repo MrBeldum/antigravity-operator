@@ -294,7 +294,9 @@ Se o `antigravity-operator` economizou seu tempo, protegeu sua cota de tokens ou
 
 ---
 
-## 🔒 Segurança e Licença
+## 🔒 Segurança, Privacidade & Licença
 
 * **Política de Segurança:** Consulte [SECURITY.md](SECURITY.md) para diretrizes de divulgação responsável de vulnerabilidades.
+* **Privacidade e Conformidade LGPD/GDPR:** Consulte [PRIVACY.md](PRIVACY.md) para detalhes sobre a política local-first, zero-telemetria e soberania total de dados sob a LGPD (Lei Federal 13.709/2018).
 * **Licença:** Distribuído sob a licença [MIT](LICENSE).
+
