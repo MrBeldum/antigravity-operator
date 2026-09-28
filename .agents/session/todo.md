@@ -1,15 +1,15 @@
 # Lista de Tarefas da Sessão
 
 ## Em Progresso ⏳
-- [ ] Criar tag de release v0.2.0 no GitHub
+- [ ] Acompanhar reações no fórum do Google AI Developers
 
 ## Pendentes 📋
-- [ ] Divulgar para a comunidade de desenvolvedores e estudantes
+- [ ] Implementar melhorias sugeridas pela comunidade em futuras releases
 
 ## Concluídas ✅
 - [x] Criação do repositório local e `git init` em `~/Github/antigravity-operator`
 - [x] Implementação dos pacotes internos em Go (`platform`, `session`, `profile`, `installer`, `doctor`)
-- [x] Embutimento dos templates via `//go:embed` nativo
+- [x] Embutimento dos templates via `//go:embed` nativo (zero runtime dependencies)
 - [x] Gestão de PID e parada graciosa do Chrome (`agyo browser stop`)
 - [x] Suporte a portas configuráveis (`--port`) e caminhos do Windows
 - [x] Testes automatizados passando (`go test -v ./...`)
@@ -22,4 +22,6 @@
 - [x] Subcomando `agyo session status` e `agyo session archive`
 - [x] Instalador universal one-liner em `scripts/install.sh`
 - [x] Pipeline de release automatizado em `.github/workflows/release.yml`
+- [x] Tag v0.2.0 enviada e release publicada no GitHub com binários estáticos
 - [x] Fórmula oficial do Homebrew em `Formula/agyo.rb`
+- [x] Post oficial de lançamento preparado para o Google AI Developers Forum
