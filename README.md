@@ -35,8 +35,25 @@ antigravity-operator/
 │   ├── rules/                # Regras canônicas de Session Agent
 │   ├── session/              # Templates de state.md, decisions.md e todo.md
 │   └── mcps/                 # Manifesto de servidores MCP (DevTools, Playwright)
+├── agents/                   # Personas especializadas para engenharia assistida por IA
+├── docs/                     # Documentação de arquitetura e matriz cross-platform
+├── .github/workflows/        # CI automatizado de paridade macOS & Linux
+├── scripts/
+│   ├── bootstrap.sh          # Setup para usuários finais
+│   └── setup-dev.sh          # Setup de desenvolvimento e pre-commit hooks
 └── Makefile                  # Build nativo e cross-compilação para Linux
 ```
+
+---
+
+## 🤖 Assisted-IA & Ecossistema de Agentes
+
+O projeto foi desenhado sob o modelo **Agent-as-Code** e contém governança nativa para agentes:
+- **`AGENTS.md`:** Contrato de conduta, diretrizes de código Go, checklist de sensores e convenções de commit para qualquer IA (Antigravity, Cursor, Claude, Copilot).
+- **Roster de Especialistas (`agents/`):**
+  - **`operator-architect`:** Guardião do sistema operacional, paridade macOS/Linux e princípios KISS/YAGNI.
+  - **`cdp-engineer`:** Especialista no Chrome DevTools Protocol, flags de browser e sockets de depuração.
+  - **`qa-sentinel`:** Responsável pelos testes automatizados e sensores de regressão.
 
 ---
 
