@@ -9,7 +9,8 @@ all: build
 build:
 	@mkdir -p $(BUILD_DIR)
 	go build -ldflags="-s -w" -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/agyo
-	@echo "✅ Binário compilado em $(BUILD_DIR)/$(BINARY_NAME)"
+	@ln -sf $(BINARY_NAME) $(BUILD_DIR)/antigravity-operator
+	@echo "✅ Binário compilado em $(BUILD_DIR)/$(BINARY_NAME) (e alias $(BUILD_DIR)/antigravity-operator)"
 
 test:
 	go test -v ./...
@@ -31,8 +32,9 @@ release: build-mac build-linux
 	@echo "🚀 Todos os binários de release foram gerados com sucesso em $(BUILD_DIR)!"
 
 install: build
-	cp $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/$(BINARY_NAME) || cp $(BUILD_DIR)/$(BINARY_NAME) $(HOME)/.local/bin/$(BINARY_NAME)
-	@echo "✅ Instalado no PATH!"
+	(cp $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/$(BINARY_NAME) && ln -sf /usr/local/bin/$(BINARY_NAME) /usr/local/bin/antigravity-operator) || \
+	(mkdir -p $(HOME)/.local/bin && cp $(BUILD_DIR)/$(BINARY_NAME) $(HOME)/.local/bin/$(BINARY_NAME) && ln -sf $(HOME)/.local/bin/$(BINARY_NAME) $(HOME)/.local/bin/antigravity-operator)
+	@echo "✅ Instalado no PATH como 'agyo' e 'antigravity-operator'!"
 
 clean:
 	rm -rf $(BUILD_DIR)
