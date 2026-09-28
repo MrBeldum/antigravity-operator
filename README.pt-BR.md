@@ -136,24 +136,25 @@ O projeto foi concebido sob o paradigma **Agent-as-Code** e traz governança de 
 
 ---
 
-## ⚡ Instalação Rápida
+## ⚡ Instalação e Início Rápido
 
-### Compilar localmente (Go 1.22+)
+### Opção 1: Instalador Universal em Uma Linha (Recomendado / Zero Config)
+Instala os binários estáticos diretamente no macOS ou Linux (sem necessidade de ter Go instalado):
 ```bash
-git clone https://github.com/tiagoboas/antigravity-operator.git
+curl -fsSL https://raw.githubusercontent.com/tiagovilasboas/antigravity-operator/main/scripts/install.sh | bash
+```
+
+### Opção 2: Homebrew (macOS & Linuxbrew)
+```bash
+brew install tiagovilasboas/tap/agyo
+```
+
+### Opção 3: Compilar do Código Fonte (Go 1.22+)
+```bash
+git clone https://github.com/tiagovilasboas/antigravity-operator.git
 cd antigravity-operator
 make build
-```
-
-O binário estará disponível em `bin/agyo`. Para instalar no seu `PATH`:
-```bash
 make install
-```
-
-### Cross-compilar para Linux a partir do Mac
-```bash
-make build-linux
-# Binários estáticos gerados em bin/agyo-linux-amd64 e bin/agyo-linux-arm64
 ```
 
 ---
@@ -192,7 +193,17 @@ Estrutura criada:
 - `.agents/session/todo.md` (Tarefas em andamento, pendentes e concluídas)
 - `.agents/.gitignore` (Protegendo logs e credenciais contra commits acidentais)
 
-### 3. Gerenciar o Chrome isolado para o DevTools MCP (`browser`)
+### 3. Inspecionar e Gerenciar a Memória de Sessão (`session`)
+Acompanhe o progresso ativo ou arquive missões concluídas:
+```bash
+# Ver objetivo atual, fase e porcentagem de tarefas concluídas:
+agyo session status
+
+# Arquivar sessão concluída para o histórico e resetar templates para a próxima tarefa:
+agyo session archive
+```
+
+### 4. Gerenciar o Chrome isolado para o DevTools MCP (`browser`)
 Controla o ciclo de vida da instância exclusiva do Chrome para inspeção de DOM, rede e console com suporte a PID e parada graciosa:
 ```bash
 # Iniciar normalmente (abre janela no Mac/Linux desktop na porta 9222):
@@ -211,13 +222,13 @@ agyo browser status
 agyo browser stop
 ```
 
-### 4. Sincronizar regras e MCPs no Antigravity (`sync`)
+### 5. Sincronizar regras e MCPs no Antigravity (`sync`)
 Garante que as regras de governança e servidores de automação estejam instalados:
 ```bash
 agyo sync
 ```
 
-### 5. Sobre o projeto e manifesto (`about`)
+### 6. Sobre o projeto e manifesto (`about`)
 ```bash
 agyo about
 ```

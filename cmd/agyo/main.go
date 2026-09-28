@@ -31,6 +31,8 @@ func main() {
 	switch command {
 	case "init":
 		runInit(os.Args[2:])
+	case "session":
+		runSession(os.Args[2:])
 	case "doctor":
 		runDoctor(info)
 	case "browser":
@@ -59,6 +61,8 @@ Usage:
 
 Available commands:
   init [dir]          Scaffold operational memory (.agents/session/) in the target project
+  session status      Display active session objective, status, and task completion metrics
+  session archive     Archive completed session to historical log and reset templates
   doctor              Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)
   browser start       Launch isolated Chrome instance with remote debugging flags
   browser status      Inspect DevTools port (9222) readiness and Chrome process PID
@@ -109,6 +113,63 @@ func runInit(args []string) {
 	}
 	for _, s := range res.Skipped {
 		fmt.Printf("   - Kept (already exists): %s\n", s)
+	}
+}
+
+func runSession(args []string) {
+	if len(args) == 0 {
+		fmt.Println("Usage: agyo session [status|archive] [dir]")
+		os.Exit(1)
+	}
+
+	sub := args[0]
+	targetDir := "."
+	if len(args) > 1 {
+		targetDir = args[1]
+	}
+
+	switch sub {
+	case "status":
+		sum, err := session.GetSummary(targetDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+
+		pct := 0
+		if sum.TotalTasks > 0 {
+			pct = (sum.DoneTasks * 100) / sum.TotalTasks
+		}
+
+		fmt.Println("📋 Active Session Overview (.agents/session/)")
+		fmt.Println("-----------------------------------------------------------------")
+		fmt.Printf("🎯 Objective : %s\n", sum.Objective)
+		fmt.Printf("⚡ Phase     : %s\n", sum.Status)
+		fmt.Printf("📊 Progress  : %d/%d tasks completed (%d%%)\n", sum.DoneTasks, sum.TotalTasks, pct)
+		if len(sum.Pending) > 0 {
+			fmt.Println("\n⏳ Pending Next Steps:")
+			for i, p := range sum.Pending {
+				if i >= 5 {
+					fmt.Printf("   ... and %d more\n", len(sum.Pending)-i)
+					break
+				}
+				fmt.Printf("   - [ ] %s\n", p)
+			}
+		}
+		fmt.Println("-----------------------------------------------------------------")
+
+	case "archive":
+		archiveFile, err := session.Archive(targetDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error archiving session: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("📦 Session archived successfully to:\n   %s\n", archiveFile)
+		fmt.Println("✅ State and tasks reset with clean templates for the next task!")
+
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown session subcommand: %s\n", sub)
+		os.Exit(1)
 	}
 }
 

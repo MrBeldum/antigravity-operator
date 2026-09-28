@@ -48,3 +48,40 @@ func TestInit(t *testing.T) {
 		t.Errorf("esperava pelo menos 3 arquivos ignorados por já existirem, obteve: %d", len(res2.Skipped))
 	}
 }
+
+func TestGetSummaryAndArchive(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "session-summary-test-*")
+	if err != nil {
+		t.Fatalf("falha ao criar temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	_, err = session.Init(tempDir, false)
+	if err != nil {
+		t.Fatalf("Init falhou: %v", err)
+	}
+
+	// Testar GetSummary
+	summary, err := session.GetSummary(tempDir)
+	if err != nil {
+		t.Fatalf("GetSummary falhou: %v", err)
+	}
+
+	if summary == nil {
+		t.Fatalf("esperava summary preenchido")
+	}
+
+	if summary.TotalTasks == 0 {
+		t.Errorf("esperava pelo menos 1 tarefa no template padrão")
+	}
+
+	// Testar Archive
+	archivePath, err := session.Archive(tempDir)
+	if err != nil {
+		t.Fatalf("Archive falhou: %v", err)
+	}
+
+	if _, err := os.Stat(archivePath); os.IsNotExist(err) {
+		t.Errorf("arquivo de arquivo não foi criado: %s", archivePath)
+	}
+}

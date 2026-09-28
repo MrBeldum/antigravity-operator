@@ -148,28 +148,27 @@ antigravity-operator/
 
 ---
 
+---
+
 ## ⚡ Getting Started & Installation
 
-### Prerequisites
-- Go 1.22+ (to build from source) or download pre-built binary
-- Google Chrome or Chromium installed on the host
+### Option 1: Universal One-Liner (Zero-Config / Recommended)
+Install pre-compiled static binaries directly on macOS or Linux (no Go required):
+```bash
+curl -fsSL https://raw.githubusercontent.com/tiagovilasboas/antigravity-operator/main/scripts/install.sh | bash
+```
 
-### Build Locally
+### Option 2: Homebrew (macOS & Linuxbrew)
+```bash
+brew install tiagovilasboas/tap/agyo
+```
+
+### Option 3: Build from Source (Go 1.22+)
 ```bash
 git clone https://github.com/tiagovilasboas/antigravity-operator.git
 cd antigravity-operator
 make build
-```
-
-The compiled binary will be placed at `bin/agyo` (with an `antigravity-operator` symlink). To install system-wide:
-```bash
 make install
-```
-
-### Cross-Compile for Linux from macOS
-```bash
-make build-linux
-# Static binaries generated at bin/agyo-linux-amd64 and bin/agyo-linux-arm64
 ```
 
 ---
@@ -195,7 +194,17 @@ Files created:
 - `.agents/session/todo.md` (Task tracker)
 - `.agents/.gitignore` (Protects runtime logs and sensitive credentials)
 
-### 3. Manage Isolated Chrome Lifecycle (`browser`)
+### 3. Inspect & Manage Session Memory (`session`)
+Monitor your agent's active progress or archive completed missions:
+```bash
+# View active mission objective, phase, and task completion percentage:
+agyo session status
+
+# Archive completed session to historical log and reset templates for the next task:
+agyo session archive
+```
+
+### 4. Manage Isolated Chrome Lifecycle (`browser`)
 Full process supervision with PID tracking and graceful shutdown:
 ```bash
 # Launch isolated Chrome on port 9222 (Desktop GUI):
@@ -214,13 +223,13 @@ agyo browser status
 agyo browser stop
 ```
 
-### 4. Sync Rules and MCP Manifestos (`sync`)
+### 5. Sync Rules and MCP Manifestos (`sync`)
 Provisions canonical rules and automation manifests into Google Antigravity:
 ```bash
 agyo sync
 ```
 
-### 5. Project Manifesto (`about`)
+### 6. Project Manifesto (`about`)
 ```bash
 agyo about
 ```
