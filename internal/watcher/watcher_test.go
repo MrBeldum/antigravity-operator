@@ -2,9 +2,11 @@ package watcher
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -205,4 +207,107 @@ func TestStream(t *testing.T) {
 	if len(received) < 3 {
 		t.Errorf("expected at least 3 events, got %d", len(received))
 	}
+}
+
+func TestSubagentAndMessageSummary(t *testing.T) {
+	// 1. invoke_subagent event summary
+	invokeEvt := &Event{
+		StepIndex: 5,
+		Type:      "PLANNER_RESPONSE",
+		ToolCalls: []ToolCall{
+			{
+				Name: "invoke_subagent",
+				Args: []byte(`{"Subagents":[{"Role":"Codebase Researcher","TypeName":"research","Prompt":"Search for authentication logic"}]}`),
+			},
+		},
+	}
+	summary := invokeEvt.Summary()
+	if !strings.Contains(summary, "SUBAGENT SPAWNED") || !strings.Contains(summary, "Codebase Researcher") || !strings.Contains(summary, "research") {
+		t.Errorf("unexpected invoke_subagent summary: %s", summary)
+	}
+
+	// 2. send_message event summary
+	msgEvt := &Event{
+		StepIndex: 6,
+		Type:      "PLANNER_RESPONSE",
+		ToolCalls: []ToolCall{
+			{
+				Name: "send_message",
+				Args: []byte(`{"Recipient":"agent-abc","Message":"Task completed successfully"}`),
+			},
+		},
+	}
+	msgSummary := msgEvt.Summary()
+	if !strings.Contains(msgSummary, "AGENT MESSAGE") || !strings.Contains(msgSummary, "agent-abc") || !strings.Contains(msgSummary, "Task completed successfully") {
+		t.Errorf("unexpected send_message summary: %s", msgSummary)
+	}
+
+	// 3. extractArgsSummary for invoke_subagent and send_message
+	if s := extractArgsSummary("invoke_subagent", []byte(`{"Subagents":[{"Role":"Debugger","TypeName":"debug"}]}`)); !strings.Contains(s, "Debugger") {
+		t.Errorf("expected Debugger in args summary, got %s", s)
+	}
+	if s := extractArgsSummary("send_message", []byte(`{"Recipient":"worker-1"}`)); !strings.Contains(s, "worker-1") {
+		t.Errorf("expected worker-1 in args summary, got %s", s)
+	}
+}
+
+func TestSubagentTree(t *testing.T) {
+	tree := NewSubagentTree()
+
+	// Process invoke_subagent event
+	evtSpawn := &Event{
+		StepIndex: 1,
+		Type:      "PLANNER_RESPONSE",
+		ToolCalls: []ToolCall{
+			{
+				Name: "invoke_subagent",
+				Args: []byte(`{"Subagents":[{"Role":"Codebase Researcher","TypeName":"research","Prompt":"Analyze DB schema"}]}`),
+			},
+		},
+	}
+	tree.ProcessEvent(evtSpawn)
+
+	agents := tree.GetActiveSubagents()
+	if len(agents) != 1 {
+		t.Fatalf("expected 1 active subagent, got %d", len(agents))
+	}
+	if agents[0].Role != "Codebase Researcher" || agents[0].TypeName != "research" {
+		t.Errorf("unexpected subagent details: %+v", agents[0])
+	}
+
+	// Process send_message event
+	evtMsg := &Event{
+		StepIndex: 2,
+		Type:      "PLANNER_RESPONSE",
+		ToolCalls: []ToolCall{
+			{
+				Name: "send_message",
+				Args: []byte(`{"Recipient":"Codebase Researcher","Message":"Found tables in db.go"}`),
+			},
+		},
+	}
+	tree.ProcessEvent(evtMsg)
+
+	formatted := tree.FormatTree()
+	if !strings.Contains(formatted, "Codebase Researcher") || !strings.Contains(formatted, "Found tables in db.go") {
+		t.Errorf("unexpected formatted tree: %s", formatted)
+	}
+}
+
+func TestSubagentTreeConcurrent(t *testing.T) {
+	tree := NewSubagentTree()
+	var wg sync.WaitGroup
+	workers := 10
+
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			tree.AddSpawn(fmt.Sprintf("Worker %d", id), "worker", "Do work", "model", "workspace")
+			tree.AddMessage("parent", fmt.Sprintf("Message from %d", id))
+			_ = tree.GetActiveSubagents()
+			_ = tree.FormatTree()
+		}(i)
+	}
+	wg.Wait()
 }
