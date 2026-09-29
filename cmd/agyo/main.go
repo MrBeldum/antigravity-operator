@@ -17,7 +17,7 @@ import (
 	"github.com/tiagoboas/antigravity-operator/internal/watcher"
 )
 
-const Version = "0.3.0"
+const Version = "0.3.1"
 
 func main() {
 	if len(os.Args) < 2 {
