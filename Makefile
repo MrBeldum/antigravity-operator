@@ -1,6 +1,6 @@
 BINARY_NAME=agyo
 BUILD_DIR=bin
-VERSION=0.4.0
+VERSION=0.4.1
 
 .PHONY: all build test clean build-linux build-mac release fmt lint coverage
 

@@ -20,7 +20,7 @@ body:
     attributes:
       label: agyo version
       description: Run `agyo version` and paste the output here.
-      placeholder: agyo (Antigravity Operator) v0.4.0 [darwin/arm64]
+      placeholder: agyo (Antigravity Operator) v0.4.1 [darwin/arm64]
     validations:
       required: true
   - type: textarea
