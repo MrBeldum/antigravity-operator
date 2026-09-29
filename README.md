@@ -156,25 +156,30 @@ antigravity-operator/
 │   ├── platform/             # SRP: OS detection, X11/Wayland check, Chrome binary resolution
 │   ├── session/              # SRP: .agents/session/ scaffold & gitignore protection
 │   ├── profile/              # SRP: Chrome lifecycle management, PID tracking & CDP port
+│   ├── watcher/              # SRP: Brain streaming, subagent tree hierarchy & OS notifications
+│   ├── exporter/             # SRP: Consolidated session report generator (Markdown & HTML)
+│   ├── dashboard/            # SRP: Pure-Go embedded HTTP server, web UI & REST API
+│   ├── completion/           # SRP: Shell autocompletion generator (Bash, Zsh, Fish)
+│   ├── hook/                 # SRP: Git pre-commit continuity sensor & safeguards
 │   ├── installer/            # SRP: Idempotent rule and MCP manifesto synchronization
 │   └── doctor/               # SRP: Machine diagnostic computational sensors
 ├── templates/                # Embedded static assets via //go:embed (zero external deps)
 │   ├── rules/                # Canonical Session Agent rules
 │   ├── session/              # Templates for state.md, decisions.md, and todo.md
 │   └── mcps/                 # Default MCP servers manifest (DevTools, Playwright)
+├── Formula/                  # Official Homebrew package formula (agyo.rb)
 ├── agents/                   # Specialized AI personas (operator-architect, cdp-engineer, qa-sentinel)
 ├── skills/                   # Bonus student skills (feynman tutor, study planner, token guard)
-├── docs/                     # Architectural and cross-platform specifications
-├── .github/workflows/        # Automated multi-OS CI (Ubuntu & macOS)
-├── scripts/
-│   ├── bootstrap.sh          # One-liner end-user setup
-│   └── setup-dev.sh          # Developer setup with pre-commit hooks
+├── docs/                     # Architecture specs & community launch articles (TabNews, LinkedIn)
+├── .github/                  # CI/CD workflows, release automation & community issue templates
+├── scripts/                  # Universal installer (install.sh) and developer setup (setup-dev.sh)
 ├── AUTHORS                   # Project authors
 ├── CONTRIBUTORS              # Project contributors
 ├── CODE_OF_CONDUCT.md        # Google Open Source Community Guidelines
 ├── SECURITY.md               # Responsible vulnerability disclosure policy
+├── PRIVACY.md                # Zero-telemetry local-first privacy policy (LGPD & GDPR)
 ├── CONTRIBUTING.md           # Contribution guide and testing protocol
-└── Makefile                  # Native build and cross-compilation targets
+└── Makefile                  # Native build, lint, coverage and cross-compilation targets
 ```
 
 ---

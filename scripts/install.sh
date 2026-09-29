@@ -41,11 +41,14 @@ if [ -n "$LATEST_TAG" ]; then
   
   TMP_DIR="$(mktemp -d)"
   if curl -sL "$URL" -o "$TMP_DIR/$TARBALL" && tar -xzf "$TMP_DIR/$TARBALL" -C "$TMP_DIR" 2>/dev/null; then
-    mv "$TMP_DIR/$BINARY" "$INSTALL_DIR/$BINARY"
-    chmod +x "$INSTALL_DIR/$BINARY"
-    ln -sf "$INSTALL_DIR/$BINARY" "$INSTALL_DIR/$ALIAS"
-    rm -rf "$TMP_DIR"
-    DOWNLOADED=1
+    EXTRACTED_BIN="$(find "$TMP_DIR" -type f \( -name "agyo" -o -name "agyo_*" \) ! -name "*.tar.gz" ! -name "*.zip" | head -n 1)"
+    if [ -n "$EXTRACTED_BIN" ]; then
+      mv "$EXTRACTED_BIN" "$INSTALL_DIR/$BINARY"
+      chmod +x "$INSTALL_DIR/$BINARY"
+      ln -sf "$INSTALL_DIR/$BINARY" "$INSTALL_DIR/$ALIAS"
+      rm -rf "$TMP_DIR"
+      DOWNLOADED=1
+    fi
   fi
 fi
 

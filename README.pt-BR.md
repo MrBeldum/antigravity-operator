@@ -139,19 +139,30 @@ antigravity-operator/
 │   ├── platform/             # SRP: Detecção de SO, display X11/Wayland e caminhos do Chrome
 │   ├── session/              # SRP: Scaffold da memória operacional (.agents/session/) e proteção de logs
 │   ├── profile/              # SRP: Gerenciamento do Chrome com perfil isolado e endpoint CDP 9222
+│   ├── watcher/              # SRP: Streaming de raciocínio, árvore de subagentes e notificações de OS
+│   ├── exporter/             # SRP: Exportador de relatórios consolidados de missão (Markdown e HTML)
+│   ├── dashboard/            # SRP: Mini-servidor HTTP embutido em Go puro, UI web e API REST
+│   ├── completion/           # SRP: Gerador de autocompletion de shell (Bash, Zsh, Fish)
+│   ├── hook/                 # SRP: Sensor e guarda de continuidade de sessão para o Git pre-commit
 │   ├── installer/            # SRP: Sincronização idempotente de regras e manifestos MCP
 │   └── doctor/               # SRP: Sensor computacional de diagnóstico completo da máquina
 ├── templates/                # Embutido no binário estático via //go:embed (zero dependências)
 │   ├── rules/                # Regras canônicas de Session Agent
 │   ├── session/              # Templates de state.md, decisions.md e todo.md
 │   └── mcps/                 # Manifesto de servidores MCP (DevTools, Playwright)
+├── Formula/                  # Fórmula oficial do pacote Homebrew (agyo.rb)
 ├── agents/                   # Personas especializadas para engenharia assistida por IA
-├── docs/                     # Documentação de arquitetura e matriz cross-platform
-├── .github/workflows/        # CI automatizado de paridade macOS & Linux
-├── scripts/
-│   ├── bootstrap.sh          # Setup para usuários finais
-│   └── setup-dev.sh          # Setup de desenvolvimento e pre-commit hooks
-└── Makefile                  # Build nativo e cross-compilação para Linux
+├── skills/                   # Habilidades bônus para estudantes (feynman tutor, study planner, token guard)
+├── docs/                     # Especificações de arquitetura e artigos de lançamento (TabNews, LinkedIn)
+├── .github/                  # CI/CD workflows, release automation e templates comunitários
+├── scripts/                  # Instalador universal (install.sh) e setup de desenvolvimento (setup-dev.sh)
+├── AUTHORS                   # Autores do projeto
+├── CONTRIBUTORS              # Colaboradores do projeto
+├── CODE_OF_CONDUCT.md        # Diretrizes comunitárias padrão Google Open Source
+├── SECURITY.md               # Política de divulgação responsável de vulnerabilidades
+├── PRIVACY.md                # Política de privacidade local-first e zero-telemetria (LGPD & GDPR)
+├── CONTRIBUTING.md           # Guia de contribuição e protocolo de testes
+└── Makefile                  # Alvos de build nativo, lint, coverage e cross-compilação
 ```
 
 ---
