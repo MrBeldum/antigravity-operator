@@ -2,8 +2,9 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
-  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/Architecture-Single%20Binary%20(No%20CGO)-success?style=for-the-badge" alt="Binary" />
+  <img src="https://img.shields.io/badge/Coverage->80%25-brightgreen?style=for-the-badge" alt="Coverage" />
   <img src="https://img.shields.io/badge/Pattern-Fowler%20Outer%20Harness-blueviolet?style=for-the-badge" alt="Pattern" />
   <img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors" alt="Sponsor" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
@@ -12,6 +13,30 @@
 > **The Autonomous Session Agent Engine & OS Runtime for Google Antigravity**  
 > *Deterministic governance, filesystem operational memory, and Chrome DevTools isolation with seamless parity across macOS and Linux.*
 
+```text
+┌─── Antigravity Operator (agyo) ────────────────────────────────────────────────────────┐
+│ $ agyo doctor                                                                          │
+│ 🔍 Antigravity Operator Doctor [OS: darwin | Arch: arm64]                             │
+│ 🖥️  Display Server: Detected (Desktop GUI)                                             │
+│ -----------------------------------------------------------------                      │
+│ ✅ Git                          : git version 2.39.5 (Tiago Vilas Boas)                │
+│ ✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app       │
+│ ✅ Chrome DevTools (Port 9222)  : Ativo (Chrome/153.0) no perfil isolado               │
+│ ✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível                             │
+│ ✅ Harness Core                 : Conectado em ~/Github/harness-core                   │
+│                                                                                        │
+│ $ agyo session status                                                                  │
+│ 📋 Active Session Overview (.agents/session/)                                          │
+│ 🎯 Objective : Autonomous OS Runtime & Harness for Google Antigravity                  │
+│ ⚡ Phase     : Execution & Browser Validation (100% verified)                          │
+│ 📊 Progress  : 4/4 tasks completed (100%)                                              │
+│                                                                                        │
+│ $ agyo browser tabs                                                                    │
+│ 🌐 Open Chrome Tabs (1 active):                                                        │
+│ [7F13B00E] Google AI Developers Forum : https://discuss.ai.google.dev                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
 <p align="center">
   <a href="README.pt-BR.md">🇧🇷 <b>Leia em Português</b></a> | <a href="#-getting-started--installation"><b>Getting Started</b></a> | <a href="#-student-research--google-ai-pro-edition"><b>Student Edition</b></a> | <a href="#-sponsor--support"><b>Sponsor</b></a> | <a href="#-how-to-contribute"><b>Contributing</b></a>
 </p>
@@ -19,6 +44,7 @@
 > **Disclaimer:** *This is an open source community-driven companion project and is not an officially sponsored Google product. It is built to extend and empower the Google Antigravity & Google AI developer ecosystem.*
 
 ---
+
 
 ## 📑 Table of Contents
 
@@ -204,32 +230,47 @@ agyo session status
 agyo session archive
 ```
 
-### 4. Manage Isolated Chrome Lifecycle (`browser`)
-Full process supervision with PID tracking and graceful shutdown:
+### 4. Manage Isolated Chrome Lifecycle & CDP (`browser`)
+Full process supervision with PID tracking, graceful shutdown, and pure-Go Chrome DevTools Protocol inspection:
 ```bash
 # Launch isolated Chrome on port 9222 (Desktop GUI):
 agyo browser start
 
-# Launch on a custom port:
+# Launch on a custom port or force headless mode (automatic on headless Linux/VPS):
 agyo browser start --port 9223
-
-# Force headless mode (automatic on headless Linux servers, VPS, or WSL2):
 agyo browser start --headless
 
-# Check status and PID:
+# Check status, port readiness, and Chrome PID:
 agyo browser status
+
+# Pure-Go DevTools Protocol (CDP) inspection (zero Node/Python scripts needed):
+agyo browser tabs                    # List all open tabs and target IDs
+agyo browser open https://github.com # Open a URL in a new tab
+agyo browser close <targetId>        # Close target tab
+agyo browser eval "document.title"   # Evaluate JS expression in active tab
+agyo browser shot screenshot.png     # Capture PNG screenshot via CDP
 
 # Gracefully terminate isolated Chrome instance (SIGTERM):
 agyo browser stop
 ```
 
-### 5. Sync Rules and MCP Manifestos (`sync`)
+### 5. Git Pre-Commit Continuity Hook (`hook`)
+Installs an automated session sensor into `.git/hooks/pre-commit` to prevent committing code without updating session objectives and task progress:
+```bash
+# Install hook in current repository (or specific target dir):
+agyo hook install
+
+# Uninstall hook when needed:
+agyo hook uninstall
+```
+
+### 6. Sync Rules, Skills, and MCP Manifestos (`sync`)
 Provisions canonical rules and automation manifests into Google Antigravity:
 ```bash
 agyo sync
 ```
 
-### 6. Project Manifesto (`about`)
+### 7. Project Manifesto (`about`)
 ```bash
 agyo about
 ```

@@ -2,14 +2,40 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
-  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/Architecture-Single%20Binary%20(No%20CGO)-success?style=for-the-badge" alt="Binary" />
+  <img src="https://img.shields.io/badge/Coverage->80%25-brightgreen?style=for-the-badge" alt="Coverage" />
   <img src="https://img.shields.io/badge/Pattern-Fowler%20Outer%20Harness-blueviolet?style=for-the-badge" alt="Pattern" />
+  <img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors" alt="Sponsor" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
 </p>
 
 > **The Autonomous Session Agent Engine & OS Runtime**  
 > *Transforme o Google Antigravity e outros clientes de IA em operadores autônomos de sistema operacional (estilo Claude Computer Use / OS Agent), com governança rígida, memória de sessão persistente no disco e paridade total entre macOS e Linux.*
+
+```text
+┌─── Antigravity Operator (agyo) ────────────────────────────────────────────────────────┐
+│ $ agyo doctor                                                                          │
+│ 🔍 Antigravity Operator Doctor [OS: darwin | Arch: arm64]                             │
+│ 🖥️  Display Server: Detected (Desktop GUI)                                             │
+│ -----------------------------------------------------------------                      │
+│ ✅ Git                          : git version 2.39.5 (Tiago Vilas Boas)                │
+│ ✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app       │
+│ ✅ Chrome DevTools (Port 9222)  : Ativo (Chrome/153.0) no perfil isolado               │
+│ ✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível                             │
+│ ✅ Harness Core                 : Conectado em ~/Github/harness-core                   │
+│                                                                                        │
+│ $ agyo session status                                                                  │
+│ 📋 Active Session Overview (.agents/session/)                                          │
+│ 🎯 Objective : Autonomous OS Runtime & Harness for Google Antigravity                  │
+│ ⚡ Phase     : Execution & Browser Validation (100% verified)                          │
+│ 📊 Progress  : 4/4 tasks completed (100%)                                              │
+│                                                                                        │
+│ $ agyo browser tabs                                                                    │
+│ 🌐 Open Chrome Tabs (1 active):                                                        │
+│ [7F13B00E] Google AI Developers Forum : https://discuss.ai.google.dev                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 > **Aviso:** *Este é um projeto comunitário de código aberto e não é um produto oficial patrocinado pelo Google. Foi concebido para estender e potencializar o ecossistema do Google Antigravity e desenvolvedores Google AI.*
 
@@ -203,32 +229,47 @@ agyo session status
 agyo session archive
 ```
 
-### 4. Gerenciar o Chrome isolado para o DevTools MCP (`browser`)
-Controla o ciclo de vida da instância exclusiva do Chrome para inspeção de DOM, rede e console com suporte a PID e parada graciosa:
+### 4. Gerenciar o Chrome isolado e Inspeção CDP (`browser`)
+Controla o ciclo de vida da instância exclusiva do Chrome e permite inspeção direta via Chrome DevTools Protocol em Go puro (sem Node/Python):
 ```bash
 # Iniciar normalmente (abre janela no Mac/Linux desktop na porta 9222):
 agyo browser start
 
-# Iniciar em porta customizada:
+# Iniciar em porta customizada ou forçar modo headless (automático em servidores Linux/VPS sem tela):
 agyo browser start --port 9223
-
-# Forçar modo headless (automático em servidores Linux, VPS ou WSL2 sem tela):
 agyo browser start --headless
 
 # Verificar se a porta de debug e o PID estão ativos:
 agyo browser status
 
+# Inspeção nativa via Chrome DevTools Protocol (CDP em Go puro):
+agyo browser tabs                    # Lista abas abertas e target IDs
+agyo browser open https://github.com # Abre URL em nova aba
+agyo browser close <targetId>        # Fecha aba por target ID
+agyo browser eval "document.title"   # Executa JS na aba ativa
+agyo browser shot screenshot.png     # Captura screenshot PNG da aba ativa
+
 # Encerrar graciosamente o processo do Chrome isolado (SIGTERM):
 agyo browser stop
 ```
 
-### 5. Sincronizar regras e MCPs no Antigravity (`sync`)
+### 5. Git Pre-Commit Hook de Continuidade (`hook`)
+Instala um sensor automático em `.git/hooks/pre-commit` para evitar commits sem atualizar o objetivo e as tarefas concluídas da sessão:
+```bash
+# Instalar o hook no repositório atual (ou diretório especificado):
+agyo hook install
+
+# Desinstalar o hook quando necessário:
+agyo hook uninstall
+```
+
+### 6. Sincronizar regras, skills e MCPs no Antigravity (`sync`)
 Garante que as regras de governança e servidores de automação estejam instalados:
 ```bash
 agyo sync
 ```
 
-### 6. Sobre o projeto e manifesto (`about`)
+### 7. Sobre o projeto e manifesto (`about`)
 ```bash
 agyo about
 ```
