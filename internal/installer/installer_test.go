@@ -28,6 +28,10 @@ func TestSync(t *testing.T) {
 		t.Error("expected non-empty MCPPath")
 	}
 
+	if res.SkillsPath == "" {
+		t.Error("expected non-empty SkillsPath")
+	}
+
 	// Verify files actually exist on disk
 	if _, err := os.Stat(res.RulesPath); os.IsNotExist(err) {
 		t.Errorf("expected rules file at %s, but does not exist", res.RulesPath)
@@ -40,6 +44,10 @@ func TestSync(t *testing.T) {
 
 	if _, err := os.Stat(res.MCPPath); os.IsNotExist(err) {
 		t.Errorf("expected MCP file at %s, but does not exist", res.MCPPath)
+	}
+
+	if _, err := os.Stat(res.SkillsPath); os.IsNotExist(err) {
+		t.Errorf("expected skills file at %s, but does not exist", res.SkillsPath)
 	}
 
 	// 2. Idempotent Sync (should preserve existing files without errors)

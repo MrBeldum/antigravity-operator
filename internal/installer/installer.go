@@ -11,9 +11,10 @@ import (
 
 // SyncResult reporta as ações executadas pelo instalador.
 type SyncResult struct {
-	RulesPath string
-	MCPPath   string
-	Updated   []string
+	RulesPath  string
+	MCPPath    string
+	SkillsPath string
+	Updated    []string
 }
 
 // Sync instala ou atualiza as configurações do Antigravity na máquina local.
@@ -55,6 +56,23 @@ func Sync(info *platform.Info) (*SyncResult, error) {
 		}
 	} else {
 		result.MCPPath = mcpDefaultTarget
+	}
+
+	// 4. Instalar skill nativa do Antigravity (agyo)
+	skillContent, err := templates.FS.ReadFile("skills/agyo/SKILL.md")
+	if err == nil {
+		homeDir := info.HomeDir
+		if homeDir == "" {
+			homeDir = filepath.Dir(filepath.Dir(info.GeminiDir))
+		}
+		skillDir := filepath.Join(homeDir, ".gemini", "config", "skills", "agyo")
+		if err := os.MkdirAll(skillDir, 0755); err == nil {
+			skillTarget := filepath.Join(skillDir, "SKILL.md")
+			if err := os.WriteFile(skillTarget, skillContent, 0644); err == nil {
+				result.SkillsPath = skillTarget
+				result.Updated = append(result.Updated, skillTarget)
+			}
+		}
 	}
 
 	return result, nil

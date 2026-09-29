@@ -350,6 +350,9 @@ func runSync(info *platform.Info) {
 	if res.MCPPath != "" {
 		fmt.Printf("✅ MCP manifest prepared at: %s\n", res.MCPPath)
 	}
+	if res.SkillsPath != "" {
+		fmt.Printf("✅ Antigravity skill installed at: %s\n", res.SkillsPath)
+	}
 }
 
 func runHook(args []string) {

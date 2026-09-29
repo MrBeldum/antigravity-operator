@@ -1,0 +1,89 @@
+---
+name: agyo
+description: Operates the local Antigravity Operator CLI (agyo) — session memory lifecycle, host environment diagnostics, isolated Chrome supervision, native CDP browser inspection, and git pre-commit session continuity hooks. Activate when the user mentions "agyo", "status da sessão", "iniciar browser", "doctor", "ver abas", "screenshot cdp", or wants to verify the outer harness state.
+inclusion: manual
+evidence_level: curated
+last_verified: 2026-09-29
+---
+
+# Skill: Antigravity Operator (`agyo`)
+
+O `agyo` é o **Outer Harness** e Runtime Operacional para o Google Antigravity.
+Ele opera como o guardião determinístico de ambiente, memória de sessão e ciclo de vida do navegador.
+
+## Quando usar
+
+- Quando iniciar uma nova sessão de trabalho ou projeto (`agyo init`)
+- Para verificar diagnósticos de máquina, Git, Chrome e NPX (`agyo doctor`)
+- Para consultar o objetivo atual e progresso das tarefas (`agyo session status`)
+- Para arquivar uma sessão concluída e reiniciar o ciclo (`agyo session archive`)
+- Para iniciar o Chrome em perfil isolado sem sujar o perfil pessoal (`agyo browser start`)
+- Para inspecionar abas, executar JavaScript ou tirar screenshot via CDP sem bibliotecas externas (`agyo browser tabs`, `eval`, `shot`)
+- Para instalar a proteção de continuidade no Git (`agyo hook install`)
+
+---
+
+## Comandos Operacionais
+
+### 1. Diagnóstico de Host e Dependências
+```bash
+agyo doctor
+```
+Verifica sistema operacional, variáveis de display (X11/Wayland/Headless), binário do Chrome, porta DevTools 9222, Git e NPX.
+
+### 2. Memória Operacional de Sessão (`.agents/session/`)
+```bash
+# Inicializar memória no repositório atual:
+agyo init
+
+# Verificar status da sessão ativa (objetivo, fase, métricas):
+agyo session status
+
+# Arquivar sessão concluída no histórico (.agents/session/history/):
+agyo session archive
+```
+
+### 3. Navegador Isolado & Chrome DevTools Protocol (CDP)
+```bash
+# Iniciar Chrome isolado na porta 9222 (GUI no macOS/Linux desktop, Headless em servidor):
+agyo browser start
+
+# Forçar modo headless explicitamente:
+agyo browser start --headless
+
+# Verificar status do Chrome e PID:
+agyo browser status
+
+# Listar abas abertas e IDs:
+agyo browser tabs
+
+# Abrir nova aba:
+agyo browser open <url>
+
+# Fechar aba por ID:
+agyo browser close <targetId>
+
+# Executar JavaScript na aba ativa:
+agyo browser eval "document.title"
+
+# Capturar screenshot PNG da aba ativa via CDP:
+agyo browser shot screenshot.png
+
+# Encerrar graciosamente o processo do Chrome:
+agyo browser stop
+```
+
+### 4. Proteção de Continuidade Git (Pre-Commit Sensor)
+```bash
+# Instalar o hook de pre-commit no repositório:
+agyo hook install
+
+# Remover o hook:
+agyo hook uninstall
+```
+
+### 5. Sincronização de Regras e Manifestos
+```bash
+agyo sync
+```
+Instala a regra global `session-agent.md`, os servidores MCP canônicos e a skill `agyo` no ambiente local.
