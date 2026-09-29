@@ -8,7 +8,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"time"
+
+	"github.com/tiagoboas/antigravity-operator/internal/dashboard"
 	"github.com/tiagoboas/antigravity-operator/internal/doctor"
+	"github.com/tiagoboas/antigravity-operator/internal/exporter"
 	"github.com/tiagoboas/antigravity-operator/internal/hook"
 	"github.com/tiagoboas/antigravity-operator/internal/installer"
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
@@ -17,7 +21,7 @@ import (
 	"github.com/tiagoboas/antigravity-operator/internal/watcher"
 )
 
-const Version = "0.3.1"
+const Version = "0.4.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -38,6 +42,8 @@ func main() {
 		runInit(os.Args[2:])
 	case "session":
 		runSession(info, os.Args[2:])
+	case "dashboard":
+		runDashboard(info, os.Args[2:])
 	case "doctor":
 		runDoctor(info)
 	case "browser":
@@ -72,6 +78,8 @@ Available commands:
   session status      Display active session objective, status, and task completion metrics
   session archive     Archive completed session to historical log and reset templates
   session watch       Stream active agent reasoning and desktop notifications in real time
+  session export      Export consolidated session report in markdown or HTML format
+  dashboard           Launch local web dashboard for live monitoring and DevTools inspection
   doctor              Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)
   browser start       Launch isolated Chrome instance with remote debugging flags
   browser status      Inspect DevTools port (9222) readiness and Chrome process PID
@@ -186,6 +194,9 @@ func runSession(info *platform.Info, args []string) {
 	case "watch", "tail":
 		runSessionWatch(info, args[1:])
 
+	case "export":
+		runSessionExport(info, args[1:])
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown session subcommand: %s\n", sub)
 		os.Exit(1)
@@ -197,6 +208,7 @@ func runSessionWatch(info *platform.Info, args []string) {
 	once := watchCmd.Bool("once", false, "Exibe os passos recentes e encerra sem acompanhar em tempo real")
 	notify := watchCmd.Bool("notify", true, "Emite notificação no SO quando o agente fizer uma pergunta")
 	steps := watchCmd.Int("steps", 5, "Número de passos recentes para exibir inicialmente")
+	tree := watchCmd.Bool("tree", false, "Exibe a árvore de subagentes e mensagens inter-agentes")
 	_ = watchCmd.Parse(args)
 
 	tInfo, err := watcher.FindActiveTranscript(info.GeminiDir)
@@ -229,6 +241,10 @@ func runSessionWatch(info *platform.Info, args []string) {
 	if err != nil && err != context.Canceled {
 		fmt.Fprintf(os.Stderr, "Erro no stream da transcrição: %v\n", err)
 		os.Exit(1)
+	}
+
+	if *tree {
+		fmt.Println("\n" + watcher.GetGlobalSubagentTree().FormatTree())
 	}
 
 	if !*once {
@@ -435,4 +451,81 @@ func runHook(args []string) {
 		os.Exit(1)
 	}
 }
+
+func runSessionExport(info *platform.Info, args []string) {
+	exportCmd := flag.NewFlagSet("session export", flag.ExitOnError)
+	format := exportCmd.String("format", "markdown", "Formato de exportação: markdown ou html")
+	out := exportCmd.String("out", "", "Caminho do arquivo de saída (opcional, padrão imprime na tela)")
+	_ = exportCmd.Parse(args)
+
+	targetDir := "."
+	if exportCmd.NArg() > 0 {
+		targetDir = exportCmd.Arg(0)
+	}
+
+	transcriptPath := ""
+	if tInfo, err := watcher.FindActiveTranscript(info.GeminiDir); err == nil {
+		transcriptPath = tInfo.Path
+	}
+
+	opts := exporter.ExportOptions{
+		Format:         *format,
+		TargetDir:      targetDir,
+		OutputPath:     *out,
+		TranscriptPath: transcriptPath,
+	}
+
+	res, err := exporter.Export(opts)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Erro ao exportar sessão: %v\n", err)
+		os.Exit(1)
+	}
+
+	if *out != "" {
+		fmt.Printf("✅ Relatório de sessão exportado com sucesso para: %s\n", *out)
+	} else {
+		fmt.Println(res)
+	}
+}
+
+func runDashboard(info *platform.Info, args []string) {
+	dashCmd := flag.NewFlagSet("dashboard", flag.ExitOnError)
+	port := dashCmd.Int("port", 8080, "Porta do servidor HTTP do dashboard")
+	open := dashCmd.Bool("open", true, "Abre automaticamente o navegador padrão")
+	_ = dashCmd.Parse(args)
+
+	targetDir := "."
+	if dashCmd.NArg() > 0 {
+		targetDir = dashCmd.Arg(0)
+	}
+
+	cfg := dashboard.Config{
+		Port:         *port,
+		TargetDir:    targetDir,
+		PlatformInfo: info,
+		OpenBrowser:  *open,
+	}
+
+	srv, err := dashboard.NewServer(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Erro ao iniciar dashboard: %v\n", err)
+		os.Exit(1)
+	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	go func() {
+		<-ctx.Done()
+		fmt.Println("\n🛑 Encerrando dashboard...")
+		shutdownCtx, sCancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer sCancel()
+		_ = srv.Shutdown(shutdownCtx)
+	}()
+
+	if err := srv.Start(); err != nil {
+		fmt.Fprintf(os.Stderr, "Servidor encerrado: %v\n", err)
+	}
+}
+
 

@@ -76,5 +76,39 @@ func TestCLI_RunHook(t *testing.T) {
 	runHook([]string{"uninstall", tempDir})
 }
 
+func TestCLI_RunSessionExport(t *testing.T) {
+	targetDir := t.TempDir()
+	info := &platform.Info{
+		OS:        "darwin",
+		GeminiDir: t.TempDir(),
+	}
+
+	runInit([]string{targetDir})
+
+	// Export to stdout
+	runSession(info, []string{"export", "--format=markdown", targetDir})
+
+	// Export to file
+	outFile := filepath.Join(targetDir, "report.html")
+	runSession(info, []string{"export", "--format=html", "--out=" + outFile, targetDir})
+
+	if _, err := os.Stat(outFile); err != nil {
+		t.Errorf("arquivo de relatório não gerado: %v", err)
+	}
+}
+
+func TestCLI_RunWatchTree(t *testing.T) {
+	info := &platform.Info{
+		OS:        "darwin",
+		GeminiDir: t.TempDir(),
+	}
+
+	brainDir := filepath.Join(info.GeminiDir, "brain", "conv-test", ".system_generated", "logs")
+	_ = os.MkdirAll(brainDir, 0755)
+	_ = os.WriteFile(filepath.Join(brainDir, "transcript.jsonl"), []byte(`{"step_index":1,"type":"PLANNER_RESPONSE","tool_calls":[{"function":{"name":"invoke_subagent","arguments":"{\"Subagents\":[{\"Role\":\"Tester\",\"TypeName\":\"research\",\"Prompt\":\"Check tests\"}]}"}}]}`+"\n"), 0644)
+
+	runSession(info, []string{"watch", "--once", "--steps=1", "--tree"})
+}
+
 
 
