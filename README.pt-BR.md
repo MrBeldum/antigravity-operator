@@ -1,6 +1,9 @@
 # Antigravity Operator (`agyo`)
 
 <p align="center">
+  <a href="https://github.com/tiagovilasboas/antigravity-operator/releases"><img src="https://img.shields.io/github/v/release/tiagovilasboas/antigravity-operator?style=for-the-badge&logo=github&color=blue" alt="Release" /></a>
+  <a href="https://github.com/tiagovilasboas/antigravity-operator/actions"><img src="https://img.shields.io/github/actions/workflow/status/tiagovilasboas/antigravity-operator/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI" alt="CI" /></a>
+  <a href="https://goreportcard.com/report/github.com/tiagovilasboas/antigravity-operator"><img src="https://goreportcard.com/badge/github.com/tiagovilasboas/antigravity-operator?style=for-the-badge" alt="Go Report Card" /></a>
   <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Version" />
   <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/Architecture-Single%20Binary%20(No%20CGO)-success?style=for-the-badge" alt="Binary" />
@@ -293,7 +296,20 @@ Garante que as regras de governança e servidores de automação estejam instala
 agyo sync
 ```
 
-### 8. Sobre o projeto e manifesto (`about`)
+### 8. Autocompletar no Terminal (`completion`)
+Gera scripts de autocompletion de comandos e flags para Zsh, Bash ou Fish:
+```bash
+# Zsh (adicione ao seu ~/.zshrc):
+source <(agyo completion zsh)
+
+# Bash (adicione ao seu ~/.bashrc):
+source <(agyo completion bash)
+
+# Fish:
+agyo completion fish | source
+```
+
+### 9. Sobre o projeto e manifesto (`about`)
 ```bash
 agyo about
 ```

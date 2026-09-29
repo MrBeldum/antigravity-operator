@@ -37,5 +37,7 @@
 - [x] Visualizador de subagentes implementado (`internal/watcher` + `agyo session watch --tree`) para rastrear `invoke_subagent` e `send_message`
 - [x] Exportador de relatório de sessão (`internal/exporter` + `agyo session export`) em Markdown e HTML responsivo autocontido
 - [x] Live Web Dashboard em Go puro (`internal/dashboard` + `agyo dashboard`) com auto-refresh, REST API e DevTools tabs
-
-
+- [x] Shell autocompletion generator em Go puro (`agyo completion [bash|zsh|fish]`)
+- [x] GitHub Community Standards em 100% (.github/ISSUE_TEMPLATE/, config.yml, PULL_REQUEST_TEMPLATE.md)
+- [x] Badges dinâmicos de alta autoridade (Release, CI Status, Go Report Card) nos READMEs
+- [x] Targets profissionais no Makefile (`make fmt`, `make lint`, `make coverage`)
