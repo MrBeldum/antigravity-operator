@@ -47,9 +47,12 @@ func TestCLI_RunSync(t *testing.T) {
 	runSync(info)
 }
 
-func TestCLI_RunBrowserStatus(t *testing.T) {
+func TestCLI_RunBrowserCommands(t *testing.T) {
 	info := &platform.Info{
 		BrowserProfile: t.TempDir(),
 	}
+	// Status
 	runBrowser(info, []string{"status"})
 }
+
+

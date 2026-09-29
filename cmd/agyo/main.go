@@ -67,6 +67,11 @@ Available commands:
   browser start       Launch isolated Chrome instance with remote debugging flags
   browser status      Inspect DevTools port (9222) readiness and Chrome process PID
   browser stop        Gracefully terminate isolated Chrome process (SIGTERM)
+  browser tabs        List all open tabs and target IDs in the isolated Chrome
+  browser open <url>  Open a new tab at the given URL in the isolated Chrome
+  browser close <id>  Close a specific tab by ID
+  browser eval "<js>" Evaluate JavaScript expression in the active tab (pure Go CDP)
+  browser shot [file] Capture PNG screenshot of active tab without external libraries
   sync                Synchronize canonical rules and MCP manifests to Google Antigravity
   about               Display manifesto and tribute to the community & Google AI Pro
   version             Print version and system architecture`)
@@ -245,11 +250,87 @@ func runBrowser(info *platform.Info, args []string) {
 			os.Exit(1)
 		}
 		fmt.Println("✅ Isolated Chrome terminated successfully.")
+
+	case "tabs":
+		tabs, err := profile.ListTabs(profile.DefaultDebugPort)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error listing browser tabs: %v\n", err)
+			os.Exit(1)
+		}
+		if len(tabs) == 0 {
+			fmt.Println("ℹ️  No open page tabs found in Chrome.")
+			return
+		}
+		fmt.Printf("🌐 Open Chrome Tabs (%d active):\n", len(tabs))
+		fmt.Println("-----------------------------------------------------------------")
+		for _, t := range tabs {
+			idPrefix := t.ID
+			if len(idPrefix) > 8 {
+				idPrefix = idPrefix[:8]
+			}
+			fmt.Printf("[%s] %-35s : %s\n", idPrefix, t.Title, t.URL)
+		}
+		fmt.Println("-----------------------------------------------------------------")
+
+	case "open":
+		if len(args) < 2 {
+			fmt.Println("Usage: agyo browser open <url>")
+			os.Exit(1)
+		}
+		targetURL := args[1]
+		tab, err := profile.OpenTab(profile.DefaultDebugPort, targetURL)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening tab: %v\n", err)
+			os.Exit(1)
+		}
+		idPrefix := tab.ID
+		if len(idPrefix) > 8 {
+			idPrefix = idPrefix[:8]
+		}
+		fmt.Printf("✅ Tab opened [%s]: %s\n", idPrefix, targetURL)
+
+	case "close":
+		if len(args) < 2 {
+			fmt.Println("Usage: agyo browser close <tab-id>")
+			os.Exit(1)
+		}
+		tabID := args[1]
+		if err := profile.CloseTab(profile.DefaultDebugPort, tabID); err != nil {
+			fmt.Fprintf(os.Stderr, "Error closing tab: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("✅ Tab [%s] closed successfully.\n", tabID)
+
+	case "eval":
+		if len(args) < 2 {
+			fmt.Println("Usage: agyo browser eval \"<javascript>\"")
+			os.Exit(1)
+		}
+		expr := args[1]
+		val, err := profile.Eval(profile.DefaultDebugPort, expr)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error evaluating JS via CDP: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println(val)
+
+	case "shot", "screenshot":
+		dest := "screenshot.png"
+		if len(args) > 1 {
+			dest = args[1]
+		}
+		if err := profile.Screenshot(profile.DefaultDebugPort, dest); err != nil {
+			fmt.Fprintf(os.Stderr, "Error capturing screenshot: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("📸 Screenshot saved successfully to: %s\n", dest)
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown browser subcommand: %s\n", sub)
 		os.Exit(1)
 	}
 }
+
 
 func runSync(info *platform.Info) {
 	fmt.Println("🔄 Synchronizing rules and manifests into Google Antigravity...")
