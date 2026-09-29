@@ -6,11 +6,13 @@ import (
 	"os"
 
 	"github.com/tiagoboas/antigravity-operator/internal/doctor"
+	"github.com/tiagoboas/antigravity-operator/internal/hook"
 	"github.com/tiagoboas/antigravity-operator/internal/installer"
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
 	"github.com/tiagoboas/antigravity-operator/internal/profile"
 	"github.com/tiagoboas/antigravity-operator/internal/session"
 )
+
 
 const Version = "0.2.0"
 
@@ -39,7 +41,10 @@ func main() {
 		runBrowser(info, os.Args[2:])
 	case "sync":
 		runSync(info)
+	case "hook":
+		runHook(os.Args[2:])
 	case "about":
+
 		printAbout()
 	case "version", "-v", "--version":
 		fmt.Printf("agyo (Antigravity Operator) v%s [%s/%s]\n", Version, info.OS, info.Arch)
@@ -73,6 +78,8 @@ Available commands:
   browser eval "<js>" Evaluate JavaScript expression in the active tab (pure Go CDP)
   browser shot [file] Capture PNG screenshot of active tab without external libraries
   sync                Synchronize canonical rules and MCP manifests to Google Antigravity
+  hook install [dir]  Install git pre-commit hook to safeguard session continuity
+  hook uninstall [dir] Remove agyo git pre-commit hook
   about               Display manifesto and tribute to the community & Google AI Pro
   version             Print version and system architecture`)
 }
@@ -344,3 +351,34 @@ func runSync(info *platform.Info) {
 		fmt.Printf("✅ MCP manifest prepared at: %s\n", res.MCPPath)
 	}
 }
+
+func runHook(args []string) {
+	if len(args) == 0 {
+		fmt.Println("Usage: agyo hook [install|uninstall] [dir]")
+		os.Exit(1)
+	}
+	sub := args[0]
+	targetDir := "."
+	if len(args) > 1 {
+		targetDir = args[1]
+	}
+	switch sub {
+	case "install":
+		path, err := hook.Install(targetDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error installing git hook: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("✅ Pre-commit session hook installed at: %s\n", path)
+	case "uninstall":
+		if err := hook.Uninstall(targetDir); err != nil {
+			fmt.Fprintf(os.Stderr, "Error uninstalling git hook: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("✅ Pre-commit session hook uninstalled successfully.")
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown hook subcommand: %s\n", sub)
+		os.Exit(1)
+	}
+}
+

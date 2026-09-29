@@ -1,11 +1,13 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
 )
+
 
 func TestCLI_PrintUsage(t *testing.T) {
 	printUsage()
@@ -54,5 +56,15 @@ func TestCLI_RunBrowserCommands(t *testing.T) {
 	// Status
 	runBrowser(info, []string{"status"})
 }
+
+func TestCLI_RunHook(t *testing.T) {
+	tempDir := t.TempDir()
+	gitHooksDir := filepath.Join(tempDir, ".git", "hooks")
+	_ = os.MkdirAll(gitHooksDir, 0755)
+
+	runHook([]string{"install", tempDir})
+	runHook([]string{"uninstall", tempDir})
+}
+
 
 
