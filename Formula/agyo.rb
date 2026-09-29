@@ -1,8 +1,8 @@
 class Agyo < Formula
   desc "Autonomous Session Agent Engine & Outer Harness for Google Antigravity"
   homepage "https://github.com/tiagovilasboas/antigravity-operator"
-  url "https://github.com/tiagovilasboas/antigravity-operator/archive/refs/tags/v0.3.1.tar.gz"
-  sha256 "b26916b667ed221653dd80f24a3927cdfca80eda6bae71afec4bed0ec952d31e"
+  url "https://github.com/tiagovilasboas/antigravity-operator/archive/refs/tags/v0.4.0.tar.gz"
+  sha256 "0201a31d046d42e199c7989d1fe6b6055761b33bba3fbb1eb536744a3482e0fb"
   license "MIT"
   head "https://github.com/tiagovilasboas/antigravity-operator.git", branch: "main"
 
