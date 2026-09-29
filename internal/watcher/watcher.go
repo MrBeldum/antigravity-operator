@@ -473,11 +473,8 @@ func getStringField(m map[string]interface{}, keys ...string) string {
 	return ""
 }
 
-// Notify emite notificação visual no SO (macOS/Linux) e alerta sonoro no terminal.
-func Notify(osName, title, message string) {
-	// Alerta sonoro de terminal (bell)
-	fmt.Print("\a")
-
+// NotifyExecutor permite interceptar comandos de notificação no SO (útil para testes ou mocks).
+var NotifyExecutor = func(osName, title, message string) {
 	switch osName {
 	case "darwin":
 		script := fmt.Sprintf(`display notification %q with title %q`, message, title)
@@ -485,6 +482,17 @@ func Notify(osName, title, message string) {
 	case "linux":
 		_ = exec.Command("notify-send", title, message).Run()
 	}
+}
+
+// Notify emite notificação visual no SO (macOS/Linux) e alerta sonoro no terminal.
+func Notify(osName, title, message string) {
+	if os.Getenv("AGYO_DISABLE_NOTIFY") == "1" {
+		return
+	}
+	// Alerta sonoro de terminal (bell)
+	fmt.Print("\a")
+
+	NotifyExecutor(osName, title, message)
 }
 
 // WatchOptions configura o comportamento do tailing.

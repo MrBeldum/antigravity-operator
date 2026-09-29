@@ -153,10 +153,20 @@ func TestEventSummary(t *testing.T) {
 }
 
 func TestNotify(t *testing.T) {
-	// Should not crash or hang on any platform
+	var calls []string
+	orig := NotifyExecutor
+	defer func() { NotifyExecutor = orig }()
+	NotifyExecutor = func(osName, title, message string) {
+		calls = append(calls, osName+":"+title+":"+message)
+	}
+
 	Notify("mock-os", "Test Title", "Test Message")
 	Notify("darwin", "Test Title", "Test Message")
 	Notify("linux", "Test Title", "Test Message")
+
+	if len(calls) != 3 {
+		t.Errorf("esperava 3 chamadas de notificação, obteve %d", len(calls))
+	}
 }
 
 func TestStream_InvalidFile(t *testing.T) {
