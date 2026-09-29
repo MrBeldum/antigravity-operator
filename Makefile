@@ -1,8 +1,8 @@
 BINARY_NAME=agyo
 BUILD_DIR=bin
-VERSION=0.1.0
+VERSION=0.4.0
 
-.PHONY: all build test clean build-linux build-mac release
+.PHONY: all build test clean build-linux build-mac release fmt lint coverage
 
 all: build
 
@@ -12,8 +12,23 @@ build:
 	@ln -sf $(BINARY_NAME) $(BUILD_DIR)/antigravity-operator
 	@echo "✅ Binário compilado em $(BUILD_DIR)/$(BINARY_NAME) (e alias $(BUILD_DIR)/antigravity-operator)"
 
+fmt:
+	@echo "🎨 Formatando código com gofmt..."
+	gofmt -s -w .
+
+lint:
+	@echo "🔍 Executando go vet..."
+	go vet ./...
+
 test:
-	go test -v ./...
+	go test -v -race ./...
+
+coverage:
+	@mkdir -p $(BUILD_DIR)
+	go test -race -coverprofile=$(BUILD_DIR)/coverage.out ./...
+	go tool cover -func=$(BUILD_DIR)/coverage.out
+	@echo "📊 Relatório de cobertura gerado em $(BUILD_DIR)/coverage.out"
+	@echo "👉 Para abrir mapa visual no browser: go tool cover -html=$(BUILD_DIR)/coverage.out"
 
 # Cross-compilação estática (CGO_ENABLED=0)
 build-mac:

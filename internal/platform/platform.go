@@ -9,14 +9,14 @@ import (
 
 // Info agrega informações sobre a plataforma e ambiente de execução.
 type Info struct {
-	OS            string
-	Arch          string
-	HomeDir       string
-	HasDisplay    bool
-	ChromeBin     string
-	GeminiDir     string
+	OS             string
+	Arch           string
+	HomeDir        string
+	HasDisplay     bool
+	ChromeBin      string
+	GeminiDir      string
 	BrowserProfile string
-	HarnessCore   string
+	HarnessCore    string
 }
 
 // Detect inspeciona o sistema operacional e resolve os caminhos canônicos.

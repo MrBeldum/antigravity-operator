@@ -112,7 +112,6 @@ func TestStop_NoPIDAndDeadPort(t *testing.T) {
 	_ = err
 }
 
-
 func TestStop_DeadPID(t *testing.T) {
 	tempDir := t.TempDir()
 	info := &platform.Info{

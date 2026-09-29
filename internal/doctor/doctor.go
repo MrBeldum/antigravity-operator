@@ -206,4 +206,3 @@ func checkAPIKeys() CheckItem {
 		Details: "Não definida no ambiente (opcional para MCPs externos)",
 	}
 }
-

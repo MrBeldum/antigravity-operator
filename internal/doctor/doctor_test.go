@@ -146,4 +146,3 @@ func TestCheckAPIKeys(t *testing.T) {
 		t.Errorf("expected OK for set key, got %s", resSet.Status)
 	}
 }
-

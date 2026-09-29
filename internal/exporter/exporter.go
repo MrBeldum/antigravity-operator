@@ -63,7 +63,7 @@ func Export(opts ExportOptions) (string, error) {
 
 	decisions := parseDecisions(opts.TargetDir)
 	todoList := parseTodo(opts.TargetDir)
-	
+
 	var metrics *Metrics
 	if opts.TranscriptPath != "" {
 		metrics = parseTranscript(opts.TranscriptPath)
@@ -180,7 +180,7 @@ func parseTranscript(path string) *Metrics {
 
 	metrics := &Metrics{}
 	scanner := bufio.NewScanner(f)
-	
+
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
 
@@ -199,7 +199,7 @@ func parseTranscript(path string) *Metrics {
 		if err := json.Unmarshal(line, &entry); err != nil {
 			continue
 		}
-		
+
 		t, _ := time.Parse(time.RFC3339, entry.CreatedAt)
 		if !t.IsZero() {
 			if metrics.Start.IsZero() {
@@ -211,7 +211,7 @@ func parseTranscript(path string) *Metrics {
 		if entry.Type == "PLANNER_RESPONSE" {
 			metrics.Thoughts++
 		}
-		
+
 		for _, tc := range entry.ToolCalls {
 			metrics.ToolCalls++
 			if tc.Function.Name == "invoke_subagent" {
@@ -219,14 +219,14 @@ func parseTranscript(path string) *Metrics {
 			}
 		}
 	}
-	
+
 	if !metrics.Start.IsZero() && !metrics.End.IsZero() {
 		d := metrics.End.Sub(metrics.Start)
 		metrics.Duration = d.Round(time.Second).String()
 	} else {
-	    metrics.Duration = "0s"
+		metrics.Duration = "0s"
 	}
-	
+
 	return metrics
 }
 
