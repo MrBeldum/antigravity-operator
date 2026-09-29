@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/tiagoboas/antigravity-operator/internal/doctor"
 	"github.com/tiagoboas/antigravity-operator/internal/hook"
@@ -11,10 +14,10 @@ import (
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
 	"github.com/tiagoboas/antigravity-operator/internal/profile"
 	"github.com/tiagoboas/antigravity-operator/internal/session"
+	"github.com/tiagoboas/antigravity-operator/internal/watcher"
 )
 
-
-const Version = "0.2.0"
+const Version = "0.3.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -34,7 +37,7 @@ func main() {
 	case "init":
 		runInit(os.Args[2:])
 	case "session":
-		runSession(os.Args[2:])
+		runSession(info, os.Args[2:])
 	case "doctor":
 		runDoctor(info)
 	case "browser":
@@ -68,6 +71,7 @@ Available commands:
   init [dir]          Scaffold operational memory (.agents/session/) in the target project
   session status      Display active session objective, status, and task completion metrics
   session archive     Archive completed session to historical log and reset templates
+  session watch       Stream active agent reasoning and desktop notifications in real time
   doctor              Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)
   browser start       Launch isolated Chrome instance with remote debugging flags
   browser status      Inspect DevTools port (9222) readiness and Chrome process PID
@@ -128,9 +132,9 @@ func runInit(args []string) {
 	}
 }
 
-func runSession(args []string) {
+func runSession(info *platform.Info, args []string) {
 	if len(args) == 0 {
-		fmt.Println("Usage: agyo session [status|archive] [dir]")
+		fmt.Println("Usage: agyo session [status|archive|watch] [dir]")
 		os.Exit(1)
 	}
 
@@ -179,9 +183,56 @@ func runSession(args []string) {
 		fmt.Printf("📦 Session archived successfully to:\n   %s\n", archiveFile)
 		fmt.Println("✅ State and tasks reset with clean templates for the next task!")
 
+	case "watch", "tail":
+		runSessionWatch(info, args[1:])
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown session subcommand: %s\n", sub)
 		os.Exit(1)
+	}
+}
+
+func runSessionWatch(info *platform.Info, args []string) {
+	watchCmd := flag.NewFlagSet("session watch", flag.ExitOnError)
+	once := watchCmd.Bool("once", false, "Exibe os passos recentes e encerra sem acompanhar em tempo real")
+	notify := watchCmd.Bool("notify", true, "Emite notificação no SO quando o agente fizer uma pergunta")
+	steps := watchCmd.Int("steps", 5, "Número de passos recentes para exibir inicialmente")
+	_ = watchCmd.Parse(args)
+
+	tInfo, err := watcher.FindActiveTranscript(info.GeminiDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Erro localizando transcrição: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("📡 Streaming Antigravity Brain [%s]\n", tInfo.ConversationID)
+	fmt.Printf("📄 Transcrição: %s\n", tInfo.Path)
+	fmt.Println("-----------------------------------------------------------------")
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	opts := watcher.WatchOptions{
+		Follow:       !*once,
+		NotifyOnWait: *notify,
+		InitialSteps: *steps,
+		OSName:       info.OS,
+	}
+
+	err = watcher.Stream(ctx, tInfo.Path, opts, func(evt *watcher.Event) {
+		summary := evt.Summary()
+		if summary != "" {
+			fmt.Println(summary)
+		}
+	})
+
+	if err != nil && err != context.Canceled {
+		fmt.Fprintf(os.Stderr, "Erro no stream da transcrição: %v\n", err)
+		os.Exit(1)
+	}
+
+	if !*once {
+		fmt.Println("\n🛑 Stream encerrado.")
 	}
 }
 

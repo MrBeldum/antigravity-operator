@@ -220,10 +220,16 @@ Estrutura criada:
 - `.agents/.gitignore` (Protegendo logs e credenciais contra commits acidentais)
 
 ### 3. Inspecionar e Gerenciar a Memória de Sessão (`session`)
-Acompanhe o progresso ativo ou arquive missões concluídas:
+Acompanhe o progresso ativo, faça streaming do raciocínio em tempo real ou arquive missões concluídas:
 ```bash
 # Ver objetivo atual, fase e porcentagem de tarefas concluídas:
 agyo session status
+
+# Acompanhar raciocínio e chamadas de ferramentas em tempo real com notificações nativas:
+agyo session watch
+
+# Exibir os últimos passos recentes e sair sem streaming contínuo:
+agyo session watch --once --steps 5
 
 # Arquivar sessão concluída para o histórico e resetar templates para a próxima tarefa:
 agyo session archive

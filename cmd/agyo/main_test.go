@@ -19,6 +19,10 @@ func TestCLI_PrintAbout(t *testing.T) {
 
 func TestCLI_RunInitAndSession(t *testing.T) {
 	targetDir := t.TempDir()
+	info := &platform.Info{
+		OS:        "darwin",
+		GeminiDir: t.TempDir(),
+	}
 
 	// 1. Initial init
 	runInit([]string{targetDir})
@@ -27,10 +31,16 @@ func TestCLI_RunInitAndSession(t *testing.T) {
 	runInit([]string{"--force", targetDir})
 
 	// 3. Session status
-	runSession([]string{"status", targetDir})
+	runSession(info, []string{"status", targetDir})
 
 	// 4. Session archive
-	runSession([]string{"archive", targetDir})
+	runSession(info, []string{"archive", targetDir})
+
+	// 5. Session watch with prepared brain log
+	brainDir := filepath.Join(info.GeminiDir, "brain", "conv-test", ".system_generated", "logs")
+	_ = os.MkdirAll(brainDir, 0755)
+	_ = os.WriteFile(filepath.Join(brainDir, "transcript.jsonl"), []byte(`{"step_index":1,"type":"USER_INPUT","content":"Hi"}`+"\n"), 0644)
+	runSession(info, []string{"watch", "--once", "--steps", "1"})
 }
 
 func TestCLI_RunDoctor(t *testing.T) {

@@ -111,3 +111,39 @@ func TestCheckDevTools(t *testing.T) {
 		t.Errorf("unexpected check status: %s", check.Status)
 	}
 }
+
+func TestCheckAntigravity(t *testing.T) {
+	info := &platform.Info{OS: "darwin"}
+	check := checkAntigravity(info)
+	if check.Name != "Google Antigravity" {
+		t.Errorf("unexpected check name: %s", check.Name)
+	}
+	if check.Status != "OK" && check.Status != "INFO" {
+		t.Errorf("unexpected status: %s", check.Status)
+	}
+
+	infoLinux := &platform.Info{OS: "linux"}
+	checkLinux := checkAntigravity(infoLinux)
+	if checkLinux.Name != "Google Antigravity" {
+		t.Errorf("unexpected check name: %s", checkLinux.Name)
+	}
+}
+
+func TestCheckAPIKeys(t *testing.T) {
+	// Test without keys
+	_ = os.Unsetenv("GEMINI_API_KEY")
+	_ = os.Unsetenv("GOOGLE_API_KEY")
+	resEmpty := checkAPIKeys()
+	if resEmpty.Status != "INFO" {
+		t.Errorf("expected INFO for empty keys, got %s", resEmpty.Status)
+	}
+
+	// Test with GEMINI_API_KEY
+	_ = os.Setenv("GEMINI_API_KEY", "AIzaSyTestKey123456789")
+	defer os.Unsetenv("GEMINI_API_KEY")
+	resSet := checkAPIKeys()
+	if resSet.Status != "OK" {
+		t.Errorf("expected OK for set key, got %s", resSet.Status)
+	}
+}
+

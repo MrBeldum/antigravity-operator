@@ -14,8 +14,9 @@ Ele opera como o guardião determinístico de ambiente, memória de sessão e ci
 ## Quando usar
 
 - Quando iniciar uma nova sessão de trabalho ou projeto (`agyo init`)
-- Para verificar diagnósticos de máquina, Git, Chrome e NPX (`agyo doctor`)
+- Para verificar diagnósticos de máquina, Git, Chrome, Antigravity e chaves API (`agyo doctor`)
 - Para consultar o objetivo atual e progresso das tarefas (`agyo session status`)
+- Para acompanhar o raciocínio do modelo e notificações em tempo real (`agyo session watch`)
 - Para arquivar uma sessão concluída e reiniciar o ciclo (`agyo session archive`)
 - Para iniciar o Chrome em perfil isolado sem sujar o perfil pessoal (`agyo browser start`)
 - Para inspecionar abas, executar JavaScript ou tirar screenshot via CDP sem bibliotecas externas (`agyo browser tabs`, `eval`, `shot`)
@@ -29,9 +30,9 @@ Ele opera como o guardião determinístico de ambiente, memória de sessão e ci
 ```bash
 agyo doctor
 ```
-Verifica sistema operacional, variáveis de display (X11/Wayland/Headless), binário do Chrome, porta DevTools 9222, Git e NPX.
+Verifica sistema operacional, processos do Google Antigravity, variáveis de display (X11/Wayland/Headless), binário do Chrome, porta DevTools 9222, Git, NPX e Gemini API Keys (BYOK).
 
-### 2. Memória Operacional de Sessão (`.agents/session/`)
+### 2. Memória Operacional de Sessão & Streaming em Tempo Real (`.agents/session/`)
 ```bash
 # Inicializar memória no repositório atual:
 agyo init
@@ -39,7 +40,13 @@ agyo init
 # Verificar status da sessão ativa (objetivo, fase, métricas):
 agyo session status
 
-# Arquivar sessão concluída no histórico (.agents/session/history/):
+# Acompanhar raciocínio e ferramentas da IA em tempo real com notificações nativas no desktop:
+agyo session watch
+
+# Acompanhar apenas os últimos 5 passos sem streaming contínuo:
+agyo session watch --once --steps 5
+
+# Arquivar sessão concluída no histórico (.agents/session/archive/):
 agyo session archive
 ```
 

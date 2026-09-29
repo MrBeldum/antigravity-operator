@@ -221,10 +221,16 @@ Files created:
 - `.agents/.gitignore` (Protects runtime logs and sensitive credentials)
 
 ### 3. Inspect & Manage Session Memory (`session`)
-Monitor your agent's active progress or archive completed missions:
+Monitor your agent's active progress, stream reasoning in real time, or archive completed missions:
 ```bash
 # View active mission objective, phase, and task completion percentage:
 agyo session status
+
+# Stream active agent reasoning and tool executions live with desktop notifications:
+agyo session watch
+
+# Show recent steps and exit without continuous streaming:
+agyo session watch --once --steps 5
 
 # Archive completed session to historical log and reset templates for the next task:
 agyo session archive

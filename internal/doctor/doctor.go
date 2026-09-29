@@ -2,6 +2,7 @@ package doctor
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 // CheckItem representa o resultado de uma verificação individual.
 type CheckItem struct {
 	Name    string
-	Status  string // "OK", "WARN", "FAIL"
+	Status  string // "OK", "WARN", "FAIL", "INFO"
 	Details string
 }
 
@@ -29,16 +30,22 @@ func Run(info *platform.Info) *Report {
 	// 1. Git e Configuração de Usuário
 	rep.add(checkGit())
 
-	// 2. Google Chrome / Chromium
+	// 2. Google Antigravity IDE & Engine
+	rep.add(checkAntigravity(info))
+
+	// 3. Google Chrome / Chromium
 	rep.add(checkChrome(info))
 
-	// 3. Porta DevTools & Perfil Isolado
+	// 4. Porta DevTools & Perfil Isolado
 	rep.add(checkDevTools(info))
 
-	// 4. Node e NPX (para MCPs)
+	// 5. Node e NPX (para MCPs)
 	rep.add(checkNode())
 
-	// 5. Integração com Harness Core
+	// 6. Gemini API Keys (BYOK)
+	rep.add(checkAPIKeys())
+
+	// 7. Integração com Harness Core
 	rep.add(checkHarnessCore(info))
 
 	return rep
@@ -144,3 +151,59 @@ func checkHarnessCore(info *platform.Info) CheckItem {
 		Details: "Modo Standalone (fonte central não detectada)",
 	}
 }
+
+func checkAntigravity(info *platform.Info) CheckItem {
+	out, err := exec.Command("pgrep", "-i", "antigravity").Output()
+	if err == nil && len(strings.TrimSpace(string(out))) > 0 {
+		pids := strings.Fields(strings.TrimSpace(string(out)))
+		return CheckItem{
+			Name:    "Google Antigravity",
+			Status:  "OK",
+			Details: fmt.Sprintf("Ativo (%d processos detectados, PID primário: %s)", len(pids), pids[0]),
+		}
+	}
+
+	if info.OS == "darwin" {
+		if _, err := os.Stat("/Applications/Antigravity.app"); err == nil {
+			return CheckItem{
+				Name:    "Google Antigravity",
+				Status:  "INFO",
+				Details: "Instalado em /Applications/Antigravity.app (inativo)",
+			}
+		}
+	}
+
+	return CheckItem{
+		Name:    "Google Antigravity",
+		Status:  "INFO",
+		Details: "Não detectado em execução no momento",
+	}
+}
+
+func checkAPIKeys() CheckItem {
+	key := os.Getenv("GEMINI_API_KEY")
+	source := "GEMINI_API_KEY"
+	if key == "" {
+		key = os.Getenv("GOOGLE_API_KEY")
+		source = "GOOGLE_API_KEY"
+	}
+
+	if key != "" {
+		masked := key
+		if len(key) > 8 {
+			masked = key[:4] + "..." + key[len(key)-4:]
+		}
+		return CheckItem{
+			Name:    "Gemini API Key (BYOK)",
+			Status:  "OK",
+			Details: fmt.Sprintf("Configurada via %s (%s)", source, masked),
+		}
+	}
+
+	return CheckItem{
+		Name:    "Gemini API Key (BYOK)",
+		Status:  "INFO",
+		Details: "Não definida no ambiente (opcional para MCPs externos)",
+	}
+}
+
