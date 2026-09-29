@@ -24,4 +24,5 @@
 - [x] Pipeline de release automatizado em `.github/workflows/release.yml`
 - [x] Tag v0.2.0 enviada e release publicada no GitHub com binários estáticos
 - [x] Fórmula oficial do Homebrew em `Formula/agyo.rb`
-- [x] Post oficial de lançamento preparado para o Google AI Developers Forum
+- [x] Post oficial de lançamento publicado no Google AI Developers Forum (Categoria: Google Antigravity)
+- [x] Conformidade de Privacidade e LGPD/GDPR documentada em PRIVACY.md e aplicada no session-agent.md
