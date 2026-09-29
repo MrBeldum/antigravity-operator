@@ -29,3 +29,8 @@ O `antigravity-operator` (`agyo`) foi concebido para entregar a **mesma experiê
 
 3. **Permissões de Sandbox em Containers:**
    * Usuários sem privilégios de root em containers Linux encontram erros com o SUID sandbox do Chrome. A flag `--no-sandbox` é ativada dinamicamente nos modos headless para garantir inicialização sem fricção.
+
+4. **Notificações Desktop (`agyo session watch`):**
+   * **macOS:** Emite notificações nativas via AppleScript (`osascript`).
+   * **Linux Desktop:** Emite notificações via especificação freedesktop (`notify-send` / `libnotify-bin`).
+   * **Servidor Headless / Container / Fallback:** Emite o sino sonoro ANSI (`\a`) para alertar sessões tmux ou terminais sem gerar erros.

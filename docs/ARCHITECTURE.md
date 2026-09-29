@@ -23,11 +23,16 @@ graph TD
         CLI --> Doctor[internal/doctor]
         CLI --> Profile[internal/profile]
         CLI --> Installer[internal/installer]
+        CLI --> CDP[internal/cdp]
+        CLI --> Hook[internal/hook]
+        CLI --> Watcher[internal/watcher]
     end
 
     subgraph OS_Targets ["Host Operating System Targets"]
         Profile -->|CDP Port 9222 / PID| IsolatedChrome["Dedicated Chrome (~/.gemini/antigravity-browser-profile)"]
-        CLI -->|Shell / Git| Filesystem["Filesystem & Git Repo"]
+        CDP -->|Pure Go RFC 6455 WS| IsolatedChrome
+        Watcher -->|Tail JSONL & Alert| Brain["Antigravity Brain (~/.gemini/antigravity/brain/*/transcript.jsonl)"]
+        Hook -->|Pre-Commit Gate| Filesystem["Filesystem & Git Repo"]
         Installer -->|MCPs| DevToolsMCP["Chrome DevTools MCP & Playwright"]
     end
 ```
@@ -42,16 +47,26 @@ graph TD
    * Creates `.agents/.gitignore` to prevent secret leaks, debug dumps, and ephemeral runtime logs from entering version control.
 
 2. **Host Diagnostics (`agyo doctor`):**
-   * Assesses machine readiness across Git configuration, Chrome installation, Node/NPX availability, display server status (X11/Wayland/Headless), and central `harness-core` integration.
+   * Assesses machine readiness across Git configuration, Chrome installation, Node/NPX availability, display server status (X11/Wayland/Headless), Antigravity process presence, BYOK keys, and central `harness-core` integration.
    * Emits deterministic statuses (`OK`, `WARN`, `FAIL`, `INFO`).
 
-3. **Browser Lifecycle & CDP Supervision (`agyo browser`):**
+3. **Browser Lifecycle & Native CDP (`agyo browser`):**
    * Spawns an isolated Google Chrome instance bounded to `~/.gemini/antigravity-browser-profile`.
    * Exposes remote debugging port `9222` (or user-defined `--port`).
    * Automatically falls back to headless flags (`--headless=new`, `--disable-dev-shm-usage`, `--no-sandbox`) when operating in headless Linux servers, Docker containers, or headless WSL2.
    * Tracks process ID in `chrome.pid` and enables graceful teardown via `agyo browser stop` (SIGTERM with SIGKILL timeout fallback).
+   * Provides pure-Go Chrome DevTools Protocol subcommands (`tabs`, `open`, `close`, `eval`, `shot`) over RFC 6455 WebSockets without external Node or Python dependencies.
 
-4. **Rules & Manifesto Sync (`agyo sync`):**
+4. **Brain Streaming & Desktop Alerts (`agyo session watch`):**
+   * Tails active Antigravity session transcripts in real time (`~/.gemini/antigravity/brain/*/transcript.jsonl`).
+   * Formats agent thoughts (`💭 Think`), tool invocations (`🛠️ Tool`), and user interactions (`👤 User`).
+   * Fires native OS desktop alerts (`osascript` on macOS, `notify-send` on Linux, terminal bell `\a`) when `ask_question` or user input is requested.
+
+5. **Session Continuity Pre-Commit Hook (`agyo hook`):**
+   * Installs an outer harness sensor into `.git/hooks/pre-commit`.
+   * Verifies that `.agents/session/state.md` and `todo.md` have been updated before allowing code commits.
+
+6. **Rules & Manifesto Sync (`agyo sync`):**
    * Deploys canonical Session Agent directives into `~/.gemini/antigravity/rules/session-agent.md`.
    * Configures standard Model Context Protocol servers in `~/.gemini/antigravity/mcp/default-servers.json`.
 
@@ -59,6 +74,7 @@ graph TD
 
 ## 3. Engineering Decisions & Principles
 
-- **Single Responsibility Principle (SRP):** Each internal package (`platform`, `session`, `profile`, `installer`, `doctor`) is strictly decoupled.
+- **Single Responsibility Principle (SRP):** Each internal package (`platform`, `session`, `profile`, `installer`, `doctor`, `cdp`, `hook`, `watcher`) is strictly decoupled.
 - **Embedded Assets (`//go:embed`):** Eliminates external filesystem dependencies at runtime, ensuring offline, self-contained single-binary execution.
 - **Pure Go / Zero CGO (`CGO_ENABLED=0`):** Guarantees dynamic linker independence across glibc, musl, and diverse Linux kernel distributions.
+- **Zero Third-Party Runtime Dependencies:** All networking, WebSockets (RFC 6455), and JSONL streaming are implemented directly on Go's standard library.

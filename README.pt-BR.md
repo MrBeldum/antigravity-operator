@@ -20,16 +20,18 @@
 │ 🖥️  Display Server: Detected (Desktop GUI)                                             │
 │ -----------------------------------------------------------------                      │
 │ ✅ Git                          : git version 2.39.5 (Tiago Vilas Boas)                │
+│ ✅ Google Antigravity           : Ativo (5 processos detectados, PID primário: 71409)   │
 │ ✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app       │
 │ ✅ Chrome DevTools (Port 9222)  : Ativo (Chrome/153.0) no perfil isolado               │
 │ ✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível                             │
+│ ℹ️  Gemini API Key (BYOK)        : Configurada via GEMINI_API_KEY (AIza...9876)         │
 │ ✅ Harness Core                 : Conectado em ~/Github/harness-core                   │
 │                                                                                        │
-│ $ agyo session status                                                                  │
-│ 📋 Active Session Overview (.agents/session/)                                          │
-│ 🎯 Objective : Autonomous OS Runtime & Harness for Google Antigravity                  │
-│ ⚡ Phase     : Execution & Browser Validation (100% verified)                          │
-│ 📊 Progress  : 4/4 tasks completed (100%)                                              │
+│ $ agyo session watch --once --steps 2                                                  │
+│ 📡 Streaming Antigravity Brain [db9011ea]                                              │
+│ 💭 [Think #1242] Analyzing architecture trade-offs...                                  │
+│ 🛠️  [Tool #1242] replace_file_content(watcher.go)                                       │
+│ 🔔 [INTERAÇÃO #1243] O agente precisa da sua resposta! (Alerta visual + sonoro)        │
 │                                                                                        │
 │ $ agyo browser tabs                                                                    │
 │ 🌐 Open Chrome Tabs (1 active):                                                        │
@@ -199,9 +201,11 @@ Saída de exemplo:
 🖥️  Ambiente Gráfico: Detectado (Desktop GUI)
 -----------------------------------------------------------------
 ✅ Git                          : git version 2.39.5 (Apple Git-154) (Tiago Vilas Boas <tcarvalhovb@gmail.com>)
+✅ Google Antigravity           : Ativo (5 processos detectados, PID primário: 71409)
 ✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-⚠️  Chrome DevTools (Port 9222)  : Inativo (execute 'agyo browser start' para iniciar)
+✅ Chrome DevTools (Port 9222)  : Ativo (Chrome/153.0) no perfil isolado
 ✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível
+ℹ️  Gemini API Key (BYOK)        : Configurada via GEMINI_API_KEY (AIza...9876)
 ✅ Harness Core                 : Conectado em /Users/tiago.boas/Github/harness-core
 -----------------------------------------------------------------
 ```

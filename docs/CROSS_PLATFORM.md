@@ -31,3 +31,8 @@
 
 3. **Container Sandbox Permissions:**
    * Non-root users in containerized Linux environments often encounter SUID sandbox failures. The `--no-sandbox` flag is applied dynamically in headless/container contexts to guarantee zero-friction startup.
+
+4. **Desktop Notifications (`agyo session watch`):**
+   * **macOS:** Dispatches native UserNotifications via AppleScript (`osascript`).
+   * **Linux Desktop:** Emits freedesktop notifications via `notify-send` (`libnotify-bin`).
+   * **Headless / Container / Fallback:** Emits ANSI terminal bell (`\a`) to wake up tmux or terminal sessions without crashing.
