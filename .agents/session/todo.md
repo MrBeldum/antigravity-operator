@@ -41,3 +41,4 @@
 - [x] GitHub Community Standards em 100% (.github/ISSUE_TEMPLATE/, config.yml, PULL_REQUEST_TEMPLATE.md)
 - [x] Badges dinâmicos de alta autoridade (Release, CI Status, Go Report Card) nos READMEs
 - [x] Targets profissionais no Makefile (`make fmt`, `make lint`, `make coverage`)
+- [x] Release v0.4.1 gerada e Homebrew Tap sincronizado com autocompletions nativos (`generate_completions_from_executable`)

@@ -4,9 +4,9 @@
 - Criação, arquitetura, portabilidade cross-platform (macOS/Linux), publicação open source no padrão Google e divulgação oficial do `antigravity-operator` (`agyo`).
 
 ## Status em Tempo Real
-- **Fase Atual:** Pacote de Polimento & Excelência Concluído (100% verificado)
+- **Fase Atual:** Versão v0.4.1 Publicada e Homebrew Tap 100% Sincronizado (100% verificado)
 - **Bloqueios:** Nenhum
-- **Última Validação:** Autocompletion de shell (`agyo completion [bash|zsh|fish]`), templates de governança da comunidade GitHub (100% Community Standards), badges dinâmicos de autoridade nos READMEs e targets profissionais no Makefile (`fmt`, `lint`, `coverage`).
+- **Última Validação:** Release v0.4.1 gerada no GitHub com binários para 5 plataformas; Homebrew Tap (`tiagovilasboas/homebrew-tap`) atualizado com SHA256 canônico e autocompletion automático (`generate_completions_from_executable`); pipeline de release 100% verde.
 
 ## Próximos Passos Imediatos
 1. Divulgar no TabNews e LinkedIn.
