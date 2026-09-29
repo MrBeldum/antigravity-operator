@@ -4,9 +4,10 @@
 - Criação, arquitetura, portabilidade cross-platform (macOS/Linux), publicação open source no padrão Google e divulgação oficial do `antigravity-operator` (`agyo`).
 
 ## Status em Tempo Real
-- **Fase Atual:** Release v0.3.1 Publicada com Sucesso Absoluto (100% verificado)
+- **Fase Atual:** Evoluções v0.4.0 Concluídas e Validadas (100% verificado)
 - **Bloqueios:** Nenhum
-- **Última Validação:** Release v0.3.1 com binários estáticos multi-OS gerados no GitHub Actions (macOS, Linux, Windows), Brain streaming (`session watch`) com alertas desktop nativos, sensor passivo do Antigravity no `doctor`, cliente CDP nativo em Go puro e documentação bilíngue completamente sincronizada.
+- **Última Validação:** Visualizador de subagentes (`watch --tree`), exportador executivo (`session export` Markdown/HTML) e Live Web Dashboard (`dashboard`) implementados com zero dependências externas, testes unitários com `-race` passando 100% e Homebrew Tap oficial ativo (`tiagovilasboas/homebrew-tap`).
 
 ## Próximos Passos Imediatos
-1. Acompanhar feedback da comunidade, métricas de adoção e divulgar no TabNews/LinkedIn.
+1. Gerar tag v0.4.0 e release multi-OS no GitHub.
+2. Divulgar no TabNews e LinkedIn.

@@ -231,14 +231,28 @@ agyo session status
 # Stream active agent reasoning and tool executions live with desktop notifications:
 agyo session watch
 
-# Show recent steps and exit without continuous streaming:
-agyo session watch --once --steps 5
+# Inspect active subagent tree (invoke_subagent & inter-agent messages):
+agyo session watch --once --steps 10 --tree
+
+# Export consolidated mission report in Markdown or standalone responsive HTML:
+agyo session export --format=markdown
+agyo session export --format=html --out=session-report.html
 
 # Archive completed session to historical log and reset templates for the next task:
 agyo session archive
 ```
 
-### 4. Manage Isolated Chrome Lifecycle & CDP (`browser`)
+### 4. Live Web Dashboard & Local Inspector (`dashboard`)
+Spawns a pure-Go zero-dependency web dashboard on `http://127.0.0.1:8080` with dark-mode UI, live session progress, doctor diagnostics, active Chrome tabs, and live activity feeds:
+```bash
+# Launch dashboard and automatically open default browser:
+agyo dashboard
+
+# Launch on a custom port without auto-opening browser:
+agyo dashboard --port 8090 --open=false
+```
+
+### 5. Manage Isolated Chrome Lifecycle & CDP (`browser`)
 Full process supervision with PID tracking, graceful shutdown, and pure-Go Chrome DevTools Protocol inspection:
 ```bash
 # Launch isolated Chrome on port 9222 (Desktop GUI):
@@ -262,7 +276,7 @@ agyo browser shot screenshot.png     # Capture PNG screenshot via CDP
 agyo browser stop
 ```
 
-### 5. Git Pre-Commit Continuity Hook (`hook`)
+### 6. Git Pre-Commit Continuity Hook (`hook`)
 Installs an automated session sensor into `.git/hooks/pre-commit` to prevent committing code without updating session objectives and task progress:
 ```bash
 # Install hook in current repository (or specific target dir):
@@ -272,13 +286,13 @@ agyo hook install
 agyo hook uninstall
 ```
 
-### 6. Sync Rules, Skills, and MCP Manifestos (`sync`)
+### 7. Sync Rules, Skills, and MCP Manifestos (`sync`)
 Provisions canonical rules and automation manifests into Google Antigravity:
 ```bash
 agyo sync
 ```
 
-### 7. Project Manifesto (`about`)
+### 8. Project Manifesto (`about`)
 ```bash
 agyo about
 ```

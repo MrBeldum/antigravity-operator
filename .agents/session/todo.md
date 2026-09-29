@@ -33,4 +33,9 @@
 - [x] Skill nativa do Antigravity embutida e provisionada via `agyo sync`
 - [x] Terminal ASCII preview card atualizado no README.md e README.pt-BR.md
 - [x] Artigos formatados para TabNews e LinkedIn em `docs/articles/`
+- [x] Repositório oficial do Homebrew tap criado (`tiagovilasboas/homebrew-tap`) com suporte a `brew install tiagovilasboas/tap/agyo`
+- [x] Visualizador de subagentes implementado (`internal/watcher` + `agyo session watch --tree`) para rastrear `invoke_subagent` e `send_message`
+- [x] Exportador de relatório de sessão (`internal/exporter` + `agyo session export`) em Markdown e HTML responsivo autocontido
+- [x] Live Web Dashboard em Go puro (`internal/dashboard` + `agyo dashboard`) com auto-refresh, REST API e DevTools tabs
+
 

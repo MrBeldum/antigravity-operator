@@ -232,14 +232,28 @@ agyo session status
 # Acompanhar raciocínio e chamadas de ferramentas em tempo real com notificações nativas:
 agyo session watch
 
-# Exibir os últimos passos recentes e sair sem streaming contínuo:
-agyo session watch --once --steps 5
+# Inspecionar a árvore de subagentes ativos e mensagens inter-agentes:
+agyo session watch --once --steps 10 --tree
+
+# Exportar relatório consolidado da sessão em Markdown ou HTML responsivo completo:
+agyo session export --format=markdown
+agyo session export --format=html --out=relatorio-sessao.html
 
 # Arquivar sessão concluída para o histórico e resetar templates para a próxima tarefa:
 agyo session archive
 ```
 
-### 4. Gerenciar o Chrome isolado e Inspeção CDP (`browser`)
+### 4. Dashboard Web & Inspetor Local em Tempo Real (`dashboard`)
+Inicia um servidor web em Go puro com zero dependências externas em `http://127.0.0.1:8080`, com UI dark mode moderna, progresso de sessão, diagnósticos do host, abas ativas do Chrome e live activity log:
+```bash
+# Iniciar dashboard e abrir automaticamente no navegador padrão:
+agyo dashboard
+
+# Iniciar em porta customizada sem abrir o navegador automaticamente:
+agyo dashboard --port 8090 --open=false
+```
+
+### 5. Gerenciar o Chrome isolado e Inspeção CDP (`browser`)
 Controla o ciclo de vida da instância exclusiva do Chrome e permite inspeção direta via Chrome DevTools Protocol em Go puro (sem Node/Python):
 ```bash
 # Iniciar normalmente (abre janela no Mac/Linux desktop na porta 9222):
@@ -263,7 +277,7 @@ agyo browser shot screenshot.png     # Captura screenshot PNG da aba ativa
 agyo browser stop
 ```
 
-### 5. Git Pre-Commit Hook de Continuidade (`hook`)
+### 6. Git Pre-Commit Hook de Continuidade (`hook`)
 Instala um sensor automático em `.git/hooks/pre-commit` para evitar commits sem atualizar o objetivo e as tarefas concluídas da sessão:
 ```bash
 # Instalar o hook no repositório atual (ou diretório especificado):
@@ -273,13 +287,13 @@ agyo hook install
 agyo hook uninstall
 ```
 
-### 6. Sincronizar regras, skills e MCPs no Antigravity (`sync`)
+### 7. Sincronizar regras, skills e MCPs no Antigravity (`sync`)
 Garante que as regras de governança e servidores de automação estejam instalados:
 ```bash
 agyo sync
 ```
 
-### 7. Sobre o projeto e manifesto (`about`)
+### 8. Sobre o projeto e manifesto (`about`)
 ```bash
 agyo about
 ```
