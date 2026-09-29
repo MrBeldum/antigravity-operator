@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Google AI Developers Forum
+    url: https://discuss.ai.google.dev/
+    about: Ask questions and discuss Google Antigravity with the official community
+  - name: GitHub Discussions
+    url: https://github.com/tiagovilasboas/antigravity-operator/discussions
+    about: Ask general questions, showcase your workflows, and share student skills
