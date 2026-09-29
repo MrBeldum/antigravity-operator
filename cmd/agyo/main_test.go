@@ -8,7 +8,6 @@ import (
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
 )
 
-
 func TestCLI_PrintUsage(t *testing.T) {
 	printUsage()
 }
@@ -110,5 +109,8 @@ func TestCLI_RunWatchTree(t *testing.T) {
 	runSession(info, []string{"watch", "--once", "--steps=1", "--tree"})
 }
 
-
-
+func TestCLI_RunCompletion(t *testing.T) {
+	runCompletion([]string{"bash"})
+	runCompletion([]string{"zsh"})
+	runCompletion([]string{"fish"})
+}

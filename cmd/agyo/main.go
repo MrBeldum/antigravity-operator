@@ -10,6 +10,7 @@ import (
 
 	"time"
 
+	"github.com/tiagoboas/antigravity-operator/internal/completion"
 	"github.com/tiagoboas/antigravity-operator/internal/dashboard"
 	"github.com/tiagoboas/antigravity-operator/internal/doctor"
 	"github.com/tiagoboas/antigravity-operator/internal/exporter"
@@ -52,6 +53,8 @@ func main() {
 		runSync(info)
 	case "hook":
 		runHook(os.Args[2:])
+	case "completion":
+		runCompletion(os.Args[2:])
 	case "about":
 
 		printAbout()
@@ -92,6 +95,7 @@ Available commands:
   sync                Synchronize canonical rules and MCP manifests to Google Antigravity
   hook install [dir]  Install git pre-commit hook to safeguard session continuity
   hook uninstall [dir] Remove agyo git pre-commit hook
+  completion [shell]  Generate shell autocompletion script (bash, zsh, fish)
   about               Display manifesto and tribute to the community & Google AI Pro
   version             Print version and system architecture`)
 }
@@ -405,7 +409,6 @@ func runBrowser(info *platform.Info, args []string) {
 	}
 }
 
-
 func runSync(info *platform.Info) {
 	fmt.Println("🔄 Synchronizing rules and manifests into Google Antigravity...")
 	res, err := installer.Sync(info)
@@ -528,4 +531,19 @@ func runDashboard(info *platform.Info, args []string) {
 	}
 }
 
+func runCompletion(args []string) {
+	if len(args) == 0 {
+		fmt.Println("Usage: agyo completion [bash|zsh|fish]")
+		fmt.Println("\nExample for zsh:")
+		fmt.Println("  source <(agyo completion zsh)")
+		fmt.Println("\nExample for bash:")
+		fmt.Println("  source <(agyo completion bash)")
+		os.Exit(1)
+	}
 
+	shell := args[0]
+	if err := completion.Generate(shell, os.Stdout); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
