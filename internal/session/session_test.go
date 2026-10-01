@@ -30,6 +30,7 @@ func TestInit(t *testing.T) {
 		filepath.Join(tempDir, ".agents", "session", "decisions.md"),
 		filepath.Join(tempDir, ".agents", "session", "todo.md"),
 		filepath.Join(tempDir, ".agents", ".gitignore"),
+		filepath.Join(tempDir, ".agentignore"),
 	}
 
 	for _, ef := range expectedFiles {

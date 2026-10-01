@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -113,4 +114,54 @@ func TestCLI_RunCompletion(t *testing.T) {
 	runCompletion([]string{"bash"})
 	runCompletion([]string{"zsh"})
 	runCompletion([]string{"fish"})
+}
+
+func TestCLI_CheckpointAndRollback(t *testing.T) {
+	tempDir := t.TempDir()
+	// Inicializa git repo para os testes de checkpoint
+	execGit := func(args ...string) {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = tempDir
+		_ = cmd.Run()
+	}
+	execGit("init")
+	execGit("config", "user.email", "test@test.com")
+	execGit("config", "user.name", "Test User")
+
+	_ = os.WriteFile(filepath.Join(tempDir, "file.txt"), []byte("initial"), 0644)
+	execGit("add", "file.txt")
+	execGit("commit", "-m", "initial commit")
+
+	// 1. Checkpoint com working tree limpa
+	runCheckpoint([]string{"--desc=Clean Tree Checkpoint", tempDir})
+
+	// 2. Modifica arquivo
+	_ = os.WriteFile(filepath.Join(tempDir, "file.txt"), []byte("dirty content"), 0644)
+	runCheckpoint([]string{"--desc=Dirty File Checkpoint", tempDir})
+
+	// 3. Listar checkpoints via CLI
+	runCheckpoint([]string{"--list", tempDir})
+
+	// 4. Modifica mais uma vez e faz rollback via CLI
+	_ = os.WriteFile(filepath.Join(tempDir, "file.txt"), []byte("bad refactor"), 0644)
+	runRollback([]string{"latest", tempDir})
+}
+
+func TestCLI_SessionListAndRestore(t *testing.T) {
+	targetDir := t.TempDir()
+	info := &platform.Info{
+		OS:        "darwin",
+		GeminiDir: t.TempDir(),
+	}
+
+	runInit([]string{targetDir})
+
+	// Arquiva sessão
+	runSession(info, []string{"archive", targetDir})
+
+	// Lista sessões
+	runSession(info, []string{"list", targetDir})
+
+	// Restaura sessão
+	runSession(info, []string{"restore", "latest", targetDir})
 }

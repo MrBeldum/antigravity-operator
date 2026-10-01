@@ -253,9 +253,36 @@ agyo session compact --threshold 5 --keep 3
 
 # Archive completed session to historical log and reset templates for the next task:
 agyo session archive
+
+# List all archived historical sessions:
+agyo session list
+
+# Restore a past archived session into active memory (creates safety backup automatically):
+agyo session restore session-2026-10-01-113140.md
+agyo session restore latest
 ```
 
-### 4. Live Web Dashboard & Local Inspector (`dashboard`)
+### 4. Filesystem Safety Net & Atomic Checkpoints (`checkpoint` & `rollback`)
+Protect your repository against hallucinated or destructive agent refactorings. Take an atomic snapshot before an agent begins risky edits, and rollback instantaneously if things go sideways:
+```bash
+# Create an atomic snapshot before starting a complex multi-file edit:
+agyo checkpoint "pre-refactor" --desc="Before database schema migration"
+
+# List all saved checkpoints:
+agyo checkpoint --list
+
+# Instant panic button: Safely undo agent changes and restore exact working tree:
+agyo rollback
+agyo rollback chk-20261001-113000
+```
+
+### 5. Token Waste Protection (`.agentignore`)
+When running `agyo init`, a pre-configured `.agentignore` blacklist is automatically scaffolded to prevent agents from loading heavyweight dependencies into prompt context:
+- Excludes `node_modules/`, `vendor/`, `dist/`, `.git/`
+- Excludes lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`)
+- Excludes large dumps, datasets, minified bundles (`*.min.js`), and local `.env` files
+
+### 6. Live Web Dashboard & Local Inspector (`dashboard`)
 Spawns a pure-Go zero-dependency web dashboard on `http://127.0.0.1:8080` with dark-mode UI, live session progress, doctor diagnostics, active Chrome tabs, and live activity feeds:
 ```bash
 # Launch dashboard and automatically open default browser:

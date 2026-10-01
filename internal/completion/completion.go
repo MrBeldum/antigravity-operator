@@ -35,8 +35,8 @@ _agyo_completion() {
         cword=$COMP_CWORD
     fi
 
-    local commands="init session dashboard doctor browser sync hook completion about version help"
-    local session_subcommands="status compact archive watch export"
+    local commands="init session checkpoint rollback dashboard doctor browser sync hook completion about version help"
+    local session_subcommands="status compact archive list restore watch export"
     local browser_subcommands="start status stop tabs open close eval shot"
     local hook_subcommands="install uninstall"
     local completion_subcommands="bash zsh fish"
@@ -80,6 +80,8 @@ _agyo() {
     commands=(
         'init:Scaffold operational memory (.agents/session/) in the target project'
         'session:Manage operational memory, progress, streaming, and export'
+        'checkpoint:Create an atomic filesystem snapshot before risky refactoring'
+        'rollback:Safely undo agent edits and restore exact working tree from a checkpoint'
         'dashboard:Launch local web dashboard for live monitoring and DevTools'
         'doctor:Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)'
         'browser:Manage isolated Chrome process lifecycle and CDP'
@@ -95,6 +97,8 @@ _agyo() {
         'status:Display active session objective, status, and task metrics'
         'compact:Archive completed tasks and rollup active todo.md to avoid context bloat'
         'archive:Archive completed session and reset templates'
+        'list:List all archived historical sessions'
+        'restore:Restore a past archived session into active memory with automatic backup'
         'watch:Stream agent reasoning, subagents, and desktop notifications'
         'export:Export consolidated session report in markdown or HTML'
     )
@@ -163,6 +167,8 @@ end
 
 complete -c agyo -n '__agyo_needs_command' -a 'init' -d 'Scaffold operational memory'
 complete -c agyo -n '__agyo_needs_command' -a 'session' -d 'Manage operational memory and streaming'
+complete -c agyo -n '__agyo_needs_command' -a 'checkpoint' -d 'Create an atomic filesystem snapshot'
+complete -c agyo -n '__agyo_needs_command' -a 'rollback' -d 'Safely undo agent edits and restore from checkpoint'
 complete -c agyo -n '__agyo_needs_command' -a 'dashboard' -d 'Launch local web dashboard'
 complete -c agyo -n '__agyo_needs_command' -a 'doctor' -d 'Audit host readiness'
 complete -c agyo -n '__agyo_needs_command' -a 'browser' -d 'Manage isolated Chrome and CDP'
@@ -173,7 +179,7 @@ complete -c agyo -n '__agyo_needs_command' -a 'about' -d 'Display project manife
 complete -c agyo -n '__agyo_needs_command' -a 'version' -d 'Print version'
 
 # Subcommands
-complete -c agyo -n '__fish_seen_subcommand_from session' -a 'status compact archive watch export'
+complete -c agyo -n '__fish_seen_subcommand_from session' -a 'status compact archive list restore watch export'
 complete -c agyo -n '__fish_seen_subcommand_from browser' -a 'start status stop tabs open close eval shot'
 complete -c agyo -n '__fish_seen_subcommand_from hook' -a 'install uninstall'
 complete -c agyo -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'

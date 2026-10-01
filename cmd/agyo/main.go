@@ -10,6 +10,7 @@ import (
 
 	"time"
 
+	"github.com/tiagoboas/antigravity-operator/internal/checkpoint"
 	"github.com/tiagoboas/antigravity-operator/internal/completion"
 	"github.com/tiagoboas/antigravity-operator/internal/dashboard"
 	"github.com/tiagoboas/antigravity-operator/internal/doctor"
@@ -22,7 +23,7 @@ import (
 	"github.com/tiagoboas/antigravity-operator/internal/watcher"
 )
 
-const Version = "0.4.2"
+const Version = "0.4.3"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -43,6 +44,10 @@ func main() {
 		runInit(os.Args[2:])
 	case "session":
 		runSession(info, os.Args[2:])
+	case "checkpoint":
+		runCheckpoint(os.Args[2:])
+	case "rollback":
+		runRollback(os.Args[2:])
 	case "dashboard":
 		runDashboard(info, os.Args[2:])
 	case "doctor":
@@ -56,7 +61,6 @@ func main() {
 	case "completion":
 		runCompletion(os.Args[2:])
 	case "about":
-
 		printAbout()
 	case "version", "-v", "--version":
 		fmt.Printf("agyo (Antigravity Operator) v%s [%s/%s]\n", Version, info.OS, info.Arch)
@@ -81,8 +85,12 @@ Available commands:
   session status      Display active session objective, status, and task completion metrics
   session compact     Archive completed tasks and rollup active todo.md to avoid context bloat
   session archive     Archive completed session to historical log and reset templates
+  session list        List all archived historical sessions
+  session restore [f] Restore a past archived session into active memory with automatic backup
   session watch       Stream active agent reasoning and desktop notifications in real time
   session export      Export consolidated session report in markdown or HTML format
+  checkpoint [name]   Create an atomic filesystem snapshot before risky refactoring
+  rollback [id]       Safely undo agent edits and restore exact working tree from a checkpoint
   dashboard           Launch local web dashboard for live monitoring and DevTools inspection
   doctor              Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)
   browser start       Launch isolated Chrome instance with remote debugging flags
@@ -203,6 +211,50 @@ func runSession(info *platform.Info, args []string) {
 		}
 		fmt.Printf("📦 Session archived successfully to:\n   %s\n", archiveFile)
 		fmt.Println("✅ State and tasks reset with clean templates for the next task!")
+
+	case "list":
+		archives, err := session.ListArchives(targetDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error listing archived sessions: %v\n", err)
+			os.Exit(1)
+		}
+		if len(archives) == 0 {
+			fmt.Println("📁 Nenhuma sessão arquivada encontrada em .agents/session/archive/")
+			return
+		}
+		fmt.Printf("📚 Sessões Arquivadas (%d encontradas):\n", len(archives))
+		fmt.Println("-----------------------------------------------------------------")
+		for _, a := range archives {
+			fmt.Printf("📦 %s\n", a.Filename)
+			fmt.Printf("   🎯 Objetivo : %s\n", a.Objective)
+			fmt.Printf("   📊 Tarefas  : %d concluídas de %d\n", a.TasksDone, a.TasksTotal)
+			fmt.Printf("   💾 Tamanho  : %d bytes\n\n", a.SizeBytes)
+		}
+		fmt.Println("💡 Para restaurar uma sessão: agyo session restore <nome-do-arquivo>")
+
+	case "restore":
+		archiveName := ""
+		if len(args) == 2 {
+			if fi, err := os.Stat(args[1]); err == nil && fi.IsDir() {
+				targetDir = args[1]
+			} else {
+				archiveName = args[1]
+			}
+		} else if len(args) > 2 {
+			archiveName = args[1]
+			targetDir = args[2]
+		}
+		res, err := session.Restore(targetDir, archiveName)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error restoring session: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("♻️  Sessão restaurada com sucesso a partir de:\n   %s\n", res.RestoredFile)
+		if res.BackupFile != "" {
+			fmt.Printf("🛡️  Backup preventivo da sessão anterior salvo em:\n   %s\n", res.BackupFile)
+		}
+		fmt.Printf("🎯 Objetivo restaurado : %s\n", res.Objective)
+		fmt.Printf("📋 Tarefas restauradas  : %d\n", res.TasksCount)
 
 	case "watch", "tail":
 		runSessionWatch(info, args[1:])
@@ -613,3 +665,101 @@ func runCompletion(args []string) {
 		os.Exit(1)
 	}
 }
+
+func runCheckpoint(args []string) {
+	chkCmd := flag.NewFlagSet("checkpoint", flag.ExitOnError)
+	desc := chkCmd.String("desc", "", "Optional description for the checkpoint")
+	listFlag := chkCmd.Bool("list", false, "List all saved checkpoints")
+	_ = chkCmd.Parse(args)
+
+	targetDir := "."
+	name := ""
+	if chkCmd.NArg() == 1 {
+		if fi, err := os.Stat(chkCmd.Arg(0)); err == nil && fi.IsDir() {
+			targetDir = chkCmd.Arg(0)
+		} else {
+			name = chkCmd.Arg(0)
+		}
+	} else if chkCmd.NArg() > 1 {
+		name = chkCmd.Arg(0)
+		targetDir = chkCmd.Arg(1)
+	}
+
+	if *listFlag {
+		list, err := checkpoint.List(targetDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error listing checkpoints: %v\n", err)
+			os.Exit(1)
+		}
+		if len(list) == 0 {
+			fmt.Println("📍 Nenhum checkpoint encontrado em .agents/session/checkpoints.json")
+			return
+		}
+		fmt.Printf("🛡️  Checkpoints Salvos (%d encontrados):\n", len(list))
+		fmt.Println("-----------------------------------------------------------------")
+		for _, c := range list {
+			fmt.Printf("🔖 [%s] %s\n", c.ID, c.Name)
+			fmt.Printf("   📅 Criado em   : %s\n", c.Timestamp)
+			fmt.Printf("   🌿 Branch/Commit: %s (%s)\n", c.Branch, c.CommitSHA)
+			if len(c.DirtyFiles) > 0 {
+				fmt.Printf("   📝 Dirty files  : %d arquivos rastreados\n", len(c.DirtyFiles))
+			}
+			if c.Description != "" {
+				fmt.Printf("   💬 Descrição    : %s\n", c.Description)
+			}
+			fmt.Println()
+		}
+		fmt.Println("💡 Para voltar ao estado de um checkpoint: agyo rollback <checkpoint-id>")
+		return
+	}
+
+	chk, err := checkpoint.Create(targetDir, name, *desc)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating checkpoint: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("🛡️  Checkpoint criado com sucesso!\n")
+	fmt.Printf("   ID        : %s\n", chk.ID)
+	fmt.Printf("   Nome      : %s\n", chk.Name)
+	fmt.Printf("   Branch    : %s (%s)\n", chk.Branch, chk.CommitSHA)
+	if len(chk.DirtyFiles) > 0 {
+		fmt.Printf("   Modificados: %d arquivos preservados no stash commit (%s)\n", len(chk.DirtyFiles), chk.StashSHA)
+	} else {
+		fmt.Printf("   Modificados: Working tree limpa (clean tree)\n")
+	}
+	fmt.Println("💡 Em caso de falha ou refatoração indesejada: agyo rollback")
+}
+
+func runRollback(args []string) {
+	targetID := ""
+	targetDir := "."
+
+	if len(args) == 1 {
+		// Se for um diretório existente, usa como targetDir, senão é targetID
+		if fi, err := os.Stat(args[0]); err == nil && fi.IsDir() {
+			targetDir = args[0]
+		} else {
+			targetID = args[0]
+		}
+	} else if len(args) > 1 {
+		targetID = args[0]
+		targetDir = args[1]
+	}
+
+	res, err := checkpoint.Rollback(targetDir, targetID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error rolling back checkpoint: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("⏪ Workspace restaurado com sucesso para o checkpoint:\n")
+	fmt.Printf("   ID        : %s\n", res.ID)
+	fmt.Printf("   Nome      : %s\n", res.Name)
+	fmt.Printf("   Timestamp : %s\n", res.Timestamp)
+	fmt.Printf("   Branch    : %s (%s)\n", res.Branch, res.CommitSHA)
+	if len(res.DirtyFiles) > 0 {
+		fmt.Printf("   Arquivos  : %d modificações restauradas na working tree\n", len(res.DirtyFiles))
+	}
+}
+

@@ -78,6 +78,18 @@ func Init(targetDir string, force bool) (*Result, error) {
 		result.Created = append(result.Created, agentsGitignore)
 	}
 
+	// 3. Criar .agentignore na raiz do projeto para blacklist de contexto
+	agentignorePath := filepath.Join(targetDir, ".agentignore")
+	if !fileExists(agentignorePath) {
+		content, err := templates.FS.ReadFile("session/agentignore")
+		if err == nil {
+			_ = os.WriteFile(agentignorePath, content, 0644)
+			result.Created = append(result.Created, agentignorePath)
+		}
+	} else if !force {
+		result.Skipped = append(result.Skipped, agentignorePath)
+	}
+
 	return result, nil
 }
 
