@@ -30,8 +30,9 @@ func TestCLI_RunInitAndSession(t *testing.T) {
 	// 2. Force init
 	runInit([]string{"--force", targetDir})
 
-	// 3. Session status
+	// 3. Session status (standard and JSON)
 	runSession(info, []string{"status", targetDir})
+	runSession(info, []string{"status", "--json", targetDir})
 
 	// 4. Session archive
 	runSession(info, []string{"archive", targetDir})
@@ -48,7 +49,19 @@ func TestCLI_RunDoctor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to detect platform: %v", err)
 	}
-	runDoctor(info)
+	targetDir := t.TempDir()
+
+	// 1. Standard doctor
+	runDoctor(info, []string{})
+
+	// 2. Doctor JSON
+	runDoctor(info, []string{"--json"})
+
+	// 3. Doctor Fix
+	runDoctor(info, []string{"--fix", targetDir})
+
+	// 4. Doctor Fix JSON
+	runDoctor(info, []string{"--fix", "--json", targetDir})
 }
 
 func TestCLI_RunSync(t *testing.T) {
@@ -139,8 +152,9 @@ func TestCLI_CheckpointAndRollback(t *testing.T) {
 	_ = os.WriteFile(filepath.Join(tempDir, "file.txt"), []byte("dirty content"), 0644)
 	runCheckpoint([]string{"--desc=Dirty File Checkpoint", tempDir})
 
-	// 3. Listar checkpoints via CLI
+	// 3. Listar checkpoints via CLI (text e JSON)
 	runCheckpoint([]string{"--list", tempDir})
+	runCheckpoint([]string{"--list", "--json", tempDir})
 
 	// 4. Modifica mais uma vez e faz rollback via CLI
 	_ = os.WriteFile(filepath.Join(tempDir, "file.txt"), []byte("bad refactor"), 0644)
@@ -159,8 +173,9 @@ func TestCLI_SessionListAndRestore(t *testing.T) {
 	// Arquiva sessão
 	runSession(info, []string{"archive", targetDir})
 
-	// Lista sessões
+	// Lista sessões (text e JSON)
 	runSession(info, []string{"list", targetDir})
+	runSession(info, []string{"list", "--json", targetDir})
 
 	// Restaura sessão
 	runSession(info, []string{"restore", "latest", targetDir})

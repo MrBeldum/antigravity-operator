@@ -14,13 +14,13 @@ import (
 
 // ArchiveInfo sintetiza uma sessão arquivada encontrada no disco.
 type ArchiveInfo struct {
-	Filename    string
-	Path        string
-	Timestamp   string
-	Objective   string
-	SizeBytes   int64
-	TasksTotal  int
-	TasksDone   int
+	Filename   string `json:"filename"`
+	Path       string `json:"path"`
+	Timestamp  string `json:"timestamp"`
+	Objective  string `json:"objective"`
+	SizeBytes  int64  `json:"size_bytes"`
+	TasksTotal int    `json:"tasks_total"`
+	TasksDone  int    `json:"tasks_done"`
 }
 
 // RestoreResult detalha o resultado de uma operação de restauração de sessão.

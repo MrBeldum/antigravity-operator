@@ -20,15 +20,15 @@ type Result struct {
 
 // Summary sintetiza o estado e tarefas da sessão atual.
 type Summary struct {
-	SessionDir      string
-	Objective       string
-	Status          string
-	TotalTasks      int
-	DoneTasks       int
-	Pending         []string
-	TotalSizeBytes  int64
-	EstimatedTokens int
-	HealthStatus    string // "Optimal 🟢", "Moderate 🟡", "Bloated 🔴"
+	SessionDir      string   `json:"session_dir"`
+	Objective       string   `json:"objective"`
+	Status          string   `json:"status"`
+	TotalTasks      int      `json:"total_tasks"`
+	DoneTasks       int      `json:"done_tasks"`
+	Pending         []string `json:"pending"`
+	TotalSizeBytes  int64    `json:"total_size_bytes"`
+	EstimatedTokens int      `json:"estimated_tokens"`
+	HealthStatus    string   `json:"health_status"` // "Optimal 🟢", "Moderate 🟡", "Bloated 🔴"
 }
 
 // Init inicializa a pasta de memória operacional de sessão (.agents/session/) no diretório alvo.

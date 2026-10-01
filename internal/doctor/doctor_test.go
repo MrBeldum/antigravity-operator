@@ -185,3 +185,28 @@ func TestCheckSessionMemory(t *testing.T) {
 		t.Errorf("esperava WARN para sessão com inchaço de tarefas, obteve %s", resWarn.Status)
 	}
 }
+
+func TestFix(t *testing.T) {
+	tempDir := t.TempDir()
+	info := &platform.Info{}
+
+	// 1. Executa Fix em diretório vazio (deve criar templates)
+	res, err := Fix(tempDir, info)
+	if err != nil {
+		t.Fatalf("Fix falhou: %v", err)
+	}
+
+	if len(res.Repaired) == 0 {
+		t.Errorf("esperava arquivos reparados/criados")
+	}
+
+	// 2. Executa Fix novamente (idempotente: deve apenas dar skip)
+	res2, err := Fix(tempDir, info)
+	if err != nil {
+		t.Fatalf("segundo Fix falhou: %v", err)
+	}
+
+	if len(res2.Skipped) == 0 {
+		t.Errorf("esperava arquivos identificados como intactos")
+	}
+}

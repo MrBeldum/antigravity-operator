@@ -211,10 +211,17 @@ make install
 
 ## 🚀 CLI Reference & Usage
 
-### 1. Environment Diagnostics (`doctor`)
-Inspects system readiness across OS, Git, Chrome, Node/NPX, and Harness connections:
+### 1. Environment Diagnostics & Self-Healing (`doctor`)
+Inspects system readiness across OS, Git, Chrome, Node/NPX, and Harness connections, with support for automatic environment self-healing:
 ```bash
+# Standard interactive diagnostics:
 agyo doctor
+
+# Machine-readable output for scripts and IDE extensions:
+agyo doctor --json
+
+# Self-healing sensor: automatically repair missing session files and corrupted state:
+agyo doctor --fix
 ```
 
 ### 2. Scaffold Operational Memory (`init`)

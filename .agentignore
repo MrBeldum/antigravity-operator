@@ -1,0 +1,46 @@
+# .agentignore — Antigravity Operator Context Blacklist
+# Previne que o agente leia ou indexe arquivos gigantes ou sensíveis, economizando milhares de tokens.
+
+# Dependências e Builds
+node_modules/
+vendor/
+target/
+dist/
+build/
+.next/
+out/
+bin/
+obj/
+
+# Arquivos de Lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+Cargo.lock
+composer.lock
+Gemfile.lock
+poetry.lock
+
+# Arquivos de Cache e Temporários
+.cache/
+tmp/
+*.tmp
+*.log
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+
+# Arquivos Minificados e Bundles
+*.min.js
+*.min.css
+*.map
+*.bundle.js
+
+# Segredos e Credenciais Locais
+.env*
+!*.example
+*.pem
+*.key
+*.cert
+credentials*

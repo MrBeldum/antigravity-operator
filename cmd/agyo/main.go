@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
-
 	"time"
 
 	"github.com/tiagoboas/antigravity-operator/internal/checkpoint"
@@ -51,7 +51,7 @@ func main() {
 	case "dashboard":
 		runDashboard(info, os.Args[2:])
 	case "doctor":
-		runDoctor(info)
+		runDoctor(info, os.Args[2:])
 	case "browser":
 		runBrowser(info, os.Args[2:])
 	case "sync":
@@ -92,7 +92,7 @@ Available commands:
   checkpoint [name]   Create an atomic filesystem snapshot before risky refactoring
   rollback [id]       Safely undo agent edits and restore exact working tree from a checkpoint
   dashboard           Launch local web dashboard for live monitoring and DevTools inspection
-  doctor              Audit host readiness (OS, Chrome, DevTools 9222, Git, Node/NPX)
+  doctor [--fix]      Audit host readiness or auto-repair session memory (supports --json)
   browser start       Launch isolated Chrome instance with remote debugging flags
   browser status      Inspect DevTools port (9222) readiness and Chrome process PID
   browser stop        Gracefully terminate isolated Chrome process (SIGTERM)
@@ -161,16 +161,26 @@ func runSession(info *platform.Info, args []string) {
 
 	sub := args[0]
 	targetDir := "."
-	if len(args) > 1 {
-		targetDir = args[1]
-	}
 
 	switch sub {
 	case "status":
+		statusCmd := flag.NewFlagSet("session status", flag.ExitOnError)
+		jsonOut := statusCmd.Bool("json", false, "Output session status as JSON")
+		_ = statusCmd.Parse(args[1:])
+		if statusCmd.NArg() > 0 {
+			targetDir = statusCmd.Arg(0)
+		}
+
 		sum, err := session.GetSummary(targetDir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
+		}
+
+		if *jsonOut {
+			data, _ := json.MarshalIndent(sum, "", "  ")
+			fmt.Println(string(data))
+			return
 		}
 
 		pct := 0
@@ -204,6 +214,9 @@ func runSession(info *platform.Info, args []string) {
 		runSessionCompact(args[1:])
 
 	case "archive":
+		if len(args) > 1 {
+			targetDir = args[1]
+		}
 		archiveFile, err := session.Archive(targetDir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error archiving session: %v\n", err)
@@ -213,10 +226,22 @@ func runSession(info *platform.Info, args []string) {
 		fmt.Println("✅ State and tasks reset with clean templates for the next task!")
 
 	case "list":
+		listCmd := flag.NewFlagSet("session list", flag.ExitOnError)
+		jsonOut := listCmd.Bool("json", false, "Output archives list as JSON")
+		_ = listCmd.Parse(args[1:])
+		if listCmd.NArg() > 0 {
+			targetDir = listCmd.Arg(0)
+		}
+
 		archives, err := session.ListArchives(targetDir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error listing archived sessions: %v\n", err)
 			os.Exit(1)
+		}
+		if *jsonOut {
+			data, _ := json.MarshalIndent(archives, "", "  ")
+			fmt.Println(string(data))
+			return
 		}
 		if len(archives) == 0 {
 			fmt.Println("📁 Nenhuma sessão arquivada encontrada em .agents/session/archive/")
@@ -374,7 +399,53 @@ func runSessionWatch(info *platform.Info, args []string) {
 	}
 }
 
-func runDoctor(info *platform.Info) {
+func runDoctor(info *platform.Info, args []string) {
+	docCmd := flag.NewFlagSet("doctor", flag.ExitOnError)
+	jsonOut := docCmd.Bool("json", false, "Output doctor diagnostics as JSON")
+	fixFlag := docCmd.Bool("fix", false, "Automatically repair missing session files and corrupted state")
+	_ = docCmd.Parse(args)
+
+	targetDir := "."
+	if docCmd.NArg() > 0 {
+		targetDir = docCmd.Arg(0)
+	}
+
+	if *fixFlag {
+		res, err := doctor.Fix(targetDir, info)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error auto-repairing environment: %v\n", err)
+			os.Exit(1)
+		}
+		if *jsonOut {
+			data, _ := json.MarshalIndent(res, "", "  ")
+			fmt.Println(string(data))
+			return
+		}
+		fmt.Println("🩺 Antigravity Operator Self-Healing Doctor:")
+		if len(res.Repaired) > 0 {
+			fmt.Printf("   ✨ Reparados/Restaurados (%d):\n", len(res.Repaired))
+			for _, r := range res.Repaired {
+				fmt.Printf("      + %s\n", r)
+			}
+		}
+		if len(res.Skipped) > 0 {
+			fmt.Printf("   🛡️  Arquivos intactos preservados (%d):\n", len(res.Skipped))
+			for _, s := range res.Skipped {
+				fmt.Printf("      - %s\n", s)
+			}
+		}
+		fmt.Println("✅ Auto-recuperação concluída com sucesso!")
+		return
+	}
+
+	report := doctor.Run(info)
+
+	if *jsonOut {
+		data, _ := json.MarshalIndent(report, "", "  ")
+		fmt.Println(string(data))
+		return
+	}
+
 	fmt.Printf("🔍 Antigravity Operator Doctor [OS: %s | Arch: %s]\n", info.OS, info.Arch)
 	if info.HasDisplay {
 		fmt.Println("🖥️  Display Server: Detected (Desktop GUI)")
@@ -383,7 +454,6 @@ func runDoctor(info *platform.Info) {
 	}
 	fmt.Println("-----------------------------------------------------------------")
 
-	report := doctor.Run(info)
 	for _, chk := range report.Checks {
 		var icon string
 		switch chk.Status {
@@ -670,6 +740,7 @@ func runCheckpoint(args []string) {
 	chkCmd := flag.NewFlagSet("checkpoint", flag.ExitOnError)
 	desc := chkCmd.String("desc", "", "Optional description for the checkpoint")
 	listFlag := chkCmd.Bool("list", false, "List all saved checkpoints")
+	jsonOut := chkCmd.Bool("json", false, "Output checkpoints list as JSON")
 	_ = chkCmd.Parse(args)
 
 	targetDir := "."
@@ -690,6 +761,11 @@ func runCheckpoint(args []string) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error listing checkpoints: %v\n", err)
 			os.Exit(1)
+		}
+		if *jsonOut {
+			data, _ := json.MarshalIndent(list, "", "  ")
+			fmt.Println(string(data))
+			return
 		}
 		if len(list) == 0 {
 			fmt.Println("📍 Nenhum checkpoint encontrado em .agents/session/checkpoints.json")

@@ -13,15 +13,36 @@ import (
 
 // CheckItem representa o resultado de uma verificação individual.
 type CheckItem struct {
-	Name    string
-	Status  string // "OK", "WARN", "FAIL", "INFO"
-	Details string
+	Name    string `json:"name"`
+	Status  string `json:"status"` // "OK", "WARN", "FAIL", "INFO"
+	Details string `json:"details"`
 }
 
 // Report agrega todas as verificações do sistema.
 type Report struct {
-	Platform *platform.Info
-	Checks   []CheckItem
+	Platform *platform.Info `json:"platform"`
+	Checks   []CheckItem    `json:"checks"`
+}
+
+// FixResult sintetiza as ações de autorrecuperação executadas.
+type FixResult struct {
+	Repaired []string `json:"repaired"`
+	Skipped  []string `json:"skipped"`
+}
+
+// Fix repara preventivamente elementos corrompidos ou ausentes do ambiente de sessão.
+func Fix(targetDir string, info *platform.Info) (*FixResult, error) {
+	res := &FixResult{}
+
+	// 1. Repara e garante .agents/session/ e templates ausentes
+	initRes, err := session.Init(targetDir, false)
+	if err != nil {
+		return nil, fmt.Errorf("falha ao auto-reparar memória de sessão: %w", err)
+	}
+	res.Repaired = append(res.Repaired, initRes.Created...)
+	res.Skipped = append(res.Skipped, initRes.Skipped...)
+
+	return res, nil
 }
 
 // Run executa todas as verificações de diagnóstico.

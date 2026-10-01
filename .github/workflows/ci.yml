@@ -35,10 +35,16 @@ jobs:
       - name: Build Native Binary
         run: make build
 
-      - name: Smoke Test (Doctor & Version)
+      - name: Smoke Test (Doctor, Version, Self-Healing & JSON)
         run: |
           ./bin/agyo version
           ./bin/agyo doctor
+          ./bin/agyo doctor --json
+          ./bin/agyo doctor --fix
+          ./bin/agyo init test-workspace
+          ./bin/agyo session status --json test-workspace
+          ./bin/agyo checkpoint "ci-test" test-workspace
+          ./bin/agyo checkpoint --list --json test-workspace
 
       - name: Cross-Compilation Test
         run: make build-linux
