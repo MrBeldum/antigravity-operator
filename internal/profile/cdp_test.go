@@ -1,9 +1,18 @@
 package profile_test
 
 import (
+	"bufio"
+	"bytes"
+	"crypto/sha1"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -102,3 +111,142 @@ func TestCDP_Screenshot_NoTabs(t *testing.T) {
 		t.Error("expected error for inactive port on Screenshot, got nil")
 	}
 }
+
+// TestCDP_EvalAndScreenshot_WithMockWS testa o fluxo completo de Eval e Screenshot
+// usando um listener TCP que simula o handshake e frames RFC 6455 do Chrome DevTools.
+func TestCDP_EvalAndScreenshot_WithMockWS(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen on random port: %v", err)
+	}
+	defer ln.Close()
+
+	port := ln.Addr().(*net.TCPAddr).Port
+
+	// Goroutine que atende tanto HTTP (/json) quanto o WebSocket upgrade
+	go func() {
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			go handleMockCDPConn(conn, port)
+		}
+	}()
+
+	// 1. Testa Eval
+	val, err := profile.Eval(port, "document.title")
+	if err != nil {
+		t.Fatalf("Eval with mock failed: %v", err)
+	}
+	if !strings.Contains(val, "Test Page") {
+		t.Errorf("expected val to contain 'Test Page', got %s", val)
+	}
+
+	// 2. Testa Screenshot
+	tmpImg := filepath.Join(t.TempDir(), "shot.png")
+	err = profile.Screenshot(port, tmpImg)
+	if err != nil {
+		t.Fatalf("Screenshot with mock failed: %v", err)
+	}
+	if fi, err := os.Stat(tmpImg); err != nil || fi.Size() == 0 {
+		t.Errorf("expected screenshot file to be written, err: %v", err)
+	}
+}
+
+func handleMockCDPConn(conn net.Conn, port int) {
+	defer conn.Close()
+	r := bufio.NewReader(conn)
+	reqLine, err := r.ReadString('\n')
+	if err != nil {
+		return
+	}
+
+	// Se for requisição HTTP GET /json
+	if strings.HasPrefix(reqLine, "GET /json") && !strings.Contains(reqLine, "devtools") {
+		// Drena headers
+		for {
+			line, err := r.ReadString('\n')
+			if err != nil || line == "\r\n" {
+				break
+			}
+		}
+		tabs := []profile.Tab{
+			{
+				ID:                   "test-tab-1",
+				Title:                "Test Page",
+				Type:                 "page",
+				URL:                  "http://example.com",
+				WebSocketDebuggerURL: fmt.Sprintf("ws://127.0.0.1:%d/devtools/page/test-tab-1", port),
+			},
+		}
+		body, _ := json.Marshal(tabs)
+		resp := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s", len(body), string(body))
+		_, _ = conn.Write([]byte(resp))
+		return
+	}
+
+	// Se for WebSocket upgrade
+	if strings.Contains(reqLine, "devtools") || strings.HasPrefix(reqLine, "GET /devtools") {
+		var secKey string
+		for {
+			line, err := r.ReadString('\n')
+			if err != nil || line == "\r\n" {
+				break
+			}
+			if strings.HasPrefix(strings.ToLower(line), "sec-websocket-key:") {
+				parts := strings.SplitN(line, ":", 2)
+				if len(parts) == 2 {
+					secKey = strings.TrimSpace(parts[1])
+				}
+			}
+		}
+
+		// Calcula Sec-WebSocket-Accept
+		h := sha1.New()
+		h.Write([]byte(secKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))
+		acceptKey := base64.StdEncoding.EncodeToString(h.Sum(nil))
+
+		upgradeResp := fmt.Sprintf("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: %s\r\n\r\n", acceptKey)
+		_, _ = conn.Write([]byte(upgradeResp))
+
+		// Lê mensagem do cliente (Eval ou Screenshot)
+		_, err = r.ReadByte() // b0
+		if err != nil {
+			return
+		}
+		b1, err := r.ReadByte()
+		if err != nil {
+			return
+		}
+		length := int(b1 & 0x7F)
+		mask := make([]byte, 4)
+		_, _ = io.ReadFull(r, mask)
+		payload := make([]byte, length)
+		_, _ = io.ReadFull(r, payload)
+		for i := 0; i < length; i++ {
+			payload[i] ^= mask[i%4]
+		}
+
+		var reqData map[string]interface{}
+		_ = json.Unmarshal(payload, &reqData)
+		method, _ := reqData["method"].(string)
+
+		var respPayload []byte
+		if method == "Runtime.evaluate" {
+			respPayload = []byte(`{"id":1,"result":{"result":{"type":"string","value":"Test Page"}}}`)
+		} else if method == "Page.captureScreenshot" {
+			// PNG simples em base64 (1x1 transparente)
+			tinyPNG := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+			respPayload = []byte(fmt.Sprintf(`{"id":1,"result":{"data":"%s"}}`, tinyPNG))
+		}
+
+		// Envia frame WS sem máscara (servidor -> cliente)
+		var out bytes.Buffer
+		out.WriteByte(0x81) // FIN + text
+		out.WriteByte(byte(len(respPayload)))
+		out.Write(respPayload)
+		_, _ = conn.Write(out.Bytes())
+	}
+}
+
