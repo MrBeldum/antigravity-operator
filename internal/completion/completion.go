@@ -36,7 +36,7 @@ _agyo_completion() {
     fi
 
     local commands="init session dashboard doctor browser sync hook completion about version help"
-    local session_subcommands="status archive watch export"
+    local session_subcommands="status compact archive watch export"
     local browser_subcommands="start status stop tabs open close eval shot"
     local hook_subcommands="install uninstall"
     local completion_subcommands="bash zsh fish"
@@ -93,6 +93,7 @@ _agyo() {
 
     session_cmds=(
         'status:Display active session objective, status, and task metrics'
+        'compact:Archive completed tasks and rollup active todo.md to avoid context bloat'
         'archive:Archive completed session and reset templates'
         'watch:Stream agent reasoning, subagents, and desktop notifications'
         'export:Export consolidated session report in markdown or HTML'
@@ -172,7 +173,7 @@ complete -c agyo -n '__agyo_needs_command' -a 'about' -d 'Display project manife
 complete -c agyo -n '__agyo_needs_command' -a 'version' -d 'Print version'
 
 # Subcommands
-complete -c agyo -n '__fish_seen_subcommand_from session' -a 'status archive watch export'
+complete -c agyo -n '__fish_seen_subcommand_from session' -a 'status compact archive watch export'
 complete -c agyo -n '__fish_seen_subcommand_from browser' -a 'start status stop tabs open close eval shot'
 complete -c agyo -n '__fish_seen_subcommand_from hook' -a 'install uninstall'
 complete -c agyo -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'

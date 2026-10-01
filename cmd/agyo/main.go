@@ -79,6 +79,7 @@ Usage:
 Available commands:
   init [dir]          Scaffold operational memory (.agents/session/) in the target project
   session status      Display active session objective, status, and task completion metrics
+  session compact     Archive completed tasks and rollup active todo.md to avoid context bloat
   session archive     Archive completed session to historical log and reset templates
   session watch       Stream active agent reasoning and desktop notifications in real time
   session export      Export consolidated session report in markdown or HTML format
@@ -146,7 +147,7 @@ func runInit(args []string) {
 
 func runSession(info *platform.Info, args []string) {
 	if len(args) == 0 {
-		fmt.Println("Usage: agyo session [status|archive|watch] [dir]")
+		fmt.Println("Usage: agyo session [status|compact|archive|watch|export] [dir]")
 		os.Exit(1)
 	}
 
@@ -184,7 +185,14 @@ func runSession(info *platform.Info, args []string) {
 				fmt.Printf("   - [ ] %s\n", p)
 			}
 		}
+		if sum.DoneTasks >= 5 {
+			fmt.Println()
+			fmt.Printf("💡 Tip: %d completed tasks in todo.md. Run 'agyo session compact' to reduce context bloat.\n", sum.DoneTasks)
+		}
 		fmt.Println("-----------------------------------------------------------------")
+
+	case "compact":
+		runSessionCompact(args[1:])
 
 	case "archive":
 		archiveFile, err := session.Archive(targetDir)
@@ -205,6 +213,52 @@ func runSession(info *platform.Info, args []string) {
 		fmt.Fprintf(os.Stderr, "Unknown session subcommand: %s\n", sub)
 		os.Exit(1)
 	}
+}
+
+func runSessionCompact(args []string) {
+	compactCmd := flag.NewFlagSet("session compact", flag.ExitOnError)
+	threshold := compactCmd.Int("threshold", 5, "Minimum completed tasks to trigger compaction")
+	keep := compactCmd.Int("keep", 3, "Number of recent completed tasks to retain in active todo.md")
+	dryRun := compactCmd.Bool("dry-run", false, "Preview compaction and token savings without modifying disk")
+	_ = compactCmd.Parse(args)
+
+	targetDir := "."
+	if compactCmd.NArg() > 0 {
+		targetDir = compactCmd.Arg(0)
+	}
+
+	res, err := session.Compact(targetDir, session.CompactOptions{
+		Threshold: *threshold,
+		KeepLast:  *keep,
+		DryRun:    *dryRun,
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error compacting session: %v\n", err)
+		os.Exit(1)
+	}
+
+	if res.AlreadyCompact {
+		fmt.Println("✨ Session memory is already clean and compact!")
+		fmt.Printf("   Active completed tasks: %d (compaction threshold is %d)\n", res.RetainedTasks, *threshold)
+		return
+	}
+
+	mode := "Applied"
+	if *dryRun {
+		mode = "Dry Run (Preview)"
+	}
+
+	fmt.Printf("🗜️  Session Memory Compacted [%s]\n", mode)
+	fmt.Println("-----------------------------------------------------------------")
+	fmt.Printf("📦 Tasks Archived        : %d tasks\n", res.CompactedTasks)
+	fmt.Printf("📌 Tasks Retained Active : %d recent tasks\n", res.RetainedTasks)
+	fmt.Printf("📉 Size Reduction        : %d B ➔ %d B (-%d bytes)\n", res.OriginalBytes, res.CompactedBytes, res.OriginalBytes-res.CompactedBytes)
+	fmt.Printf("⚡ Context Tokens Saved  : ~%d tokens\n", res.TokensSavedEst)
+	if !*dryRun {
+		fmt.Printf("📁 Archive Location      : %s\n", res.ArchiveFile)
+		fmt.Println("✅ Active todo.md refreshed with clean rollup note.")
+	}
+	fmt.Println("-----------------------------------------------------------------")
 }
 
 func runSessionWatch(info *platform.Info, args []string) {

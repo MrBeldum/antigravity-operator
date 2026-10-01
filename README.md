@@ -246,6 +246,11 @@ agyo session watch --once --steps 10 --tree
 agyo session export --format=markdown
 agyo session export --format=html --out=session-report.html
 
+# Compact completed tasks to avoid context bloat (archives older tasks with rollup):
+agyo session compact
+agyo session compact --dry-run
+agyo session compact --threshold 5 --keep 3
+
 # Archive completed session to historical log and reset templates for the next task:
 agyo session archive
 ```
