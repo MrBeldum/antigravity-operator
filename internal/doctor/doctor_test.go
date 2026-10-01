@@ -3,6 +3,7 @@ package doctor
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
@@ -144,5 +145,43 @@ func TestCheckAPIKeys(t *testing.T) {
 	resSet := checkAPIKeys()
 	if resSet.Status != "OK" {
 		t.Errorf("expected OK for set key, got %s", resSet.Status)
+	}
+}
+
+func TestCheckSessionMemory(t *testing.T) {
+	// 1. Diretório sem sessão
+	emptyDir := t.TempDir()
+	resEmpty := checkSessionMemory(emptyDir)
+	if resEmpty.Status != "INFO" {
+		t.Errorf("esperava INFO para diretório sem sessão, obteve %s", resEmpty.Status)
+	}
+
+	// 2. Diretório com sessão saudável
+	sessionDir := t.TempDir()
+	dotAgents := filepath.Join(sessionDir, ".agents", "session")
+	_ = os.MkdirAll(dotAgents, 0755)
+	_ = os.WriteFile(filepath.Join(dotAgents, "state.md"), []byte("# Estado\n## Objetivo Atual\n- Teste\n"), 0644)
+	_ = os.WriteFile(filepath.Join(dotAgents, "todo.md"), []byte("# Tarefas\n- [x] Tarefa 1\n"), 0644)
+
+	resOK := checkSessionMemory(sessionDir)
+	if resOK.Status != "OK" {
+		t.Errorf("esperava OK para sessão saudável, obteve %s", resOK.Status)
+	}
+
+	// 3. Diretório com inchaço de tarefas (> 15 tarefas concluídas)
+	bloatedDir := t.TempDir()
+	bloatedAgents := filepath.Join(bloatedDir, ".agents", "session")
+	_ = os.MkdirAll(bloatedAgents, 0755)
+	_ = os.WriteFile(filepath.Join(bloatedAgents, "state.md"), []byte("# Estado\n## Objetivo Atual\n- Bloat Test\n"), 0644)
+	var bloatedTasks []string
+	bloatedTasks = append(bloatedTasks, "# Tarefas")
+	for i := 1; i <= 20; i++ {
+		bloatedTasks = append(bloatedTasks, "- [x] Tarefa acumulada sem compactação")
+	}
+	_ = os.WriteFile(filepath.Join(bloatedAgents, "todo.md"), []byte(strings.Join(bloatedTasks, "\n")), 0644)
+
+	resWarn := checkSessionMemory(bloatedDir)
+	if resWarn.Status != "WARN" {
+		t.Errorf("esperava WARN para sessão com inchaço de tarefas, obteve %s", resWarn.Status)
 	}
 }

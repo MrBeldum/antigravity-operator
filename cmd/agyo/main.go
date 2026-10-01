@@ -175,6 +175,7 @@ func runSession(info *platform.Info, args []string) {
 		fmt.Printf("🎯 Objective : %s\n", sum.Objective)
 		fmt.Printf("⚡ Phase     : %s\n", sum.Status)
 		fmt.Printf("📊 Progress  : %d/%d tasks completed (%d%%)\n", sum.DoneTasks, sum.TotalTasks, pct)
+		fmt.Printf("🧠 Footprint : %d B (~%d tokens) [%s]\n", sum.TotalSizeBytes, sum.EstimatedTokens, sum.HealthStatus)
 		if len(sum.Pending) > 0 {
 			fmt.Println("\n⏳ Pending Next Steps:")
 			for i, p := range sum.Pending {
@@ -185,9 +186,9 @@ func runSession(info *platform.Info, args []string) {
 				fmt.Printf("   - [ ] %s\n", p)
 			}
 		}
-		if sum.DoneTasks >= 5 {
+		if sum.HealthStatus == "Bloated 🔴" || sum.DoneTasks >= 5 {
 			fmt.Println()
-			fmt.Printf("💡 Tip: %d completed tasks in todo.md. Run 'agyo session compact' to reduce context bloat.\n", sum.DoneTasks)
+			fmt.Printf("💡 Tip: %d completed tasks / ~%d tokens in session. Run 'agyo session compact' to reduce context bloat.\n", sum.DoneTasks, sum.EstimatedTokens)
 		}
 		fmt.Println("-----------------------------------------------------------------")
 
@@ -250,13 +251,24 @@ func runSessionCompact(args []string) {
 
 	fmt.Printf("🗜️  Session Memory Compacted [%s]\n", mode)
 	fmt.Println("-----------------------------------------------------------------")
-	fmt.Printf("📦 Tasks Archived        : %d tasks\n", res.CompactedTasks)
-	fmt.Printf("📌 Tasks Retained Active : %d recent tasks\n", res.RetainedTasks)
+	if res.CompactedTasks > 0 {
+		fmt.Printf("📦 Tasks Archived        : %d tasks\n", res.CompactedTasks)
+		fmt.Printf("📌 Tasks Retained Active : %d recent tasks\n", res.RetainedTasks)
+	}
+	if res.StateCompacted {
+		fmt.Printf("📜 State Cleaned         : %d bytes removed from historical sections\n", res.StateBytesSaved)
+	}
 	fmt.Printf("📉 Size Reduction        : %d B ➔ %d B (-%d bytes)\n", res.OriginalBytes, res.CompactedBytes, res.OriginalBytes-res.CompactedBytes)
 	fmt.Printf("⚡ Context Tokens Saved  : ~%d tokens\n", res.TokensSavedEst)
 	if !*dryRun {
-		fmt.Printf("📁 Archive Location      : %s\n", res.ArchiveFile)
-		fmt.Println("✅ Active todo.md refreshed with clean rollup note.")
+		if res.ArchiveFile != "" {
+			fmt.Printf("📁 Tasks Archive         : %s\n", res.ArchiveFile)
+			fmt.Println("✅ Active todo.md refreshed with clean rollup note.")
+		}
+		if res.StateArchiveFile != "" {
+			fmt.Printf("📁 State Archive         : %s\n", res.StateArchiveFile)
+			fmt.Println("✅ Active state.md pruned of stale historical logs.")
+		}
 	}
 	fmt.Println("-----------------------------------------------------------------")
 }

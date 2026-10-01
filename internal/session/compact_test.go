@@ -291,4 +291,68 @@ func TestCompact_ExceptionsAndEdgeCases(t *testing.T) {
 			t.Errorf("mensagem de erro inesperada: %v", err)
 		}
 	})
+
+	// 8. Compactação de seções históricas no state.md
+	t.Run("StateHistoricalSectionsCompaction", func(t *testing.T) {
+		tempDir, err := os.MkdirTemp("", "compact-state-*")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(tempDir)
+
+		sessionDir := filepath.Join(tempDir, ".agents", "session")
+		_ = os.MkdirAll(sessionDir, 0755)
+
+		// todo.md já compacto (2 tarefas)
+		_ = os.WriteFile(filepath.Join(sessionDir, "todo.md"), []byte("# Tarefas\n- [x] T1\n- [x] T2\n"), 0644)
+
+		// state.md com seções históricas acumuladas
+		stateContent := `# Estado da Sessão
+## Objetivo Atual
+- Entregar feature X
+## Status em Tempo Real
+- Fase: Execução
+## Histórico de Execuções
+- Turno 1: tentou X e falhou
+- Turno 2: corrigiu Y
+- Turno 3: deploy efetuado
+## Próximos Passos Imediatos
+1. Passo final
+`
+		statePath := filepath.Join(sessionDir, "state.md")
+		_ = os.WriteFile(statePath, []byte(stateContent), 0644)
+
+		res, err := session.Compact(tempDir, session.DefaultCompactOptions())
+		if err != nil {
+			t.Fatalf("Compact de state falhou: %v", err)
+		}
+
+		if !res.StateCompacted {
+			t.Errorf("esperava StateCompacted=true")
+		}
+		if res.StateBytesSaved <= 0 {
+			t.Errorf("esperava StateBytesSaved > 0, obteve %d", res.StateBytesSaved)
+		}
+
+		// Validar que o state.md ativo não contém mais a seção de histórico
+		cleanStateBytes, _ := os.ReadFile(statePath)
+		cleanStateStr := string(cleanStateBytes)
+		if strings.Contains(cleanStateStr, "Histórico de Execuções") {
+			t.Errorf("state.md limpo ainda contém seção de histórico")
+		}
+		if !strings.Contains(cleanStateStr, "Entregar feature X") {
+			t.Errorf("state.md limpo deve manter o Objetivo Atual")
+		}
+		if !strings.Contains(cleanStateStr, "Passo final") {
+			t.Errorf("state.md limpo deve manter os Próximos Passos")
+		}
+
+		// Validar que o arquivo de histórico foi criado em archive
+		if res.StateArchiveFile == "" {
+			t.Errorf("esperava StateArchiveFile preenchido")
+		}
+		if _, err := os.Stat(res.StateArchiveFile); os.IsNotExist(err) {
+			t.Errorf("arquivo de arquivo de estado não existe: %s", res.StateArchiveFile)
+		}
+	})
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/tiagoboas/antigravity-operator/internal/platform"
 	"github.com/tiagoboas/antigravity-operator/internal/profile"
+	"github.com/tiagoboas/antigravity-operator/internal/session"
 )
 
 // CheckItem representa o resultado de uma verificação individual.
@@ -47,6 +48,9 @@ func Run(info *platform.Info) *Report {
 
 	// 7. Integração com Harness Core
 	rep.add(checkHarnessCore(info))
+
+	// 8. Memória Operacional de Sessão (.agents/session/)
+	rep.add(checkSessionMemory("."))
 
 	return rep
 }
@@ -204,5 +208,31 @@ func checkAPIKeys() CheckItem {
 		Name:    "Gemini API Key (BYOK)",
 		Status:  "INFO",
 		Details: "Não definida no ambiente (opcional para MCPs externos)",
+	}
+}
+
+func checkSessionMemory(dir string) CheckItem {
+	sum, err := session.GetSummary(dir)
+	if err != nil {
+		return CheckItem{
+			Name:    "Session Memory (.agents/session/)",
+			Status:  "INFO",
+			Details: "Nenhuma sessão ativa neste diretório (execute 'agyo init' para inicializar)",
+		}
+	}
+
+	details := fmt.Sprintf("Objetivo: %s | %d/%d tarefas | %d B (~%d tokens) [%s]",
+		sum.Objective, sum.DoneTasks, sum.TotalTasks, sum.TotalSizeBytes, sum.EstimatedTokens, sum.HealthStatus)
+
+	status := "OK"
+	if sum.HealthStatus == "Bloated 🔴" {
+		status = "WARN"
+		details += " — Execute 'agyo session compact' para reduzir context bloat"
+	}
+
+	return CheckItem{
+		Name:    "Session Memory (.agents/session/)",
+		Status:  status,
+		Details: details,
 	}
 }

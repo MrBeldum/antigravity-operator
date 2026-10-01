@@ -26,17 +26,21 @@ func DefaultCompactOptions() CompactOptions {
 
 // CompactResult sumariza o impacto da compactação de contexto.
 type CompactResult struct {
-	CompactedTasks int
-	RetainedTasks  int
-	OriginalBytes  int
-	CompactedBytes int
-	TokensSavedEst int
-	ArchiveFile    string
-	AlreadyCompact bool
+	CompactedTasks   int
+	RetainedTasks    int
+	OriginalBytes    int
+	CompactedBytes   int
+	TokensSavedEst   int
+	ArchiveFile      string
+	AlreadyCompact   bool
+	StateCompacted   bool
+	StateBytesSaved  int
+	StateArchiveFile string
 }
 
-// Compact analisa .agents/session/todo.md, arquiva tarefas concluídas antigas
-// em .agents/session/archive/ e reescreve o todo.md com rollup executivo limpo.
+// Compact analisa .agents/session/todo.md e state.md, arquiva tarefas concluídas
+// antigas e seções de histórico verboso em .agents/session/archive/ e reescreve
+// os arquivos com rollup executivo limpo.
 func Compact(targetDir string, opts CompactOptions) (*CompactResult, error) {
 	if opts.Threshold <= 0 {
 		opts.Threshold = 5
@@ -47,6 +51,7 @@ func Compact(targetDir string, opts CompactOptions) (*CompactResult, error) {
 
 	sessionDir := filepath.Join(targetDir, ".agents", "session")
 	todoFile := filepath.Join(sessionDir, "todo.md")
+	stateFile := filepath.Join(sessionDir, "state.md")
 
 	if !fileExists(todoFile) {
 		return nil, fmt.Errorf("arquivo de tarefas não encontrado em %s", todoFile)
@@ -55,6 +60,12 @@ func Compact(targetDir string, opts CompactOptions) (*CompactResult, error) {
 	originalContent, err := os.ReadFile(todoFile)
 	if err != nil {
 		return nil, fmt.Errorf("falha ao ler %s: %w", todoFile, err)
+	}
+
+	res := &CompactResult{
+		OriginalBytes:  len(originalContent),
+		CompactedBytes: len(originalContent),
+		AlreadyCompact: true,
 	}
 
 	lines := strings.Split(string(originalContent), "\n")
@@ -72,109 +83,157 @@ func Compact(targetDir string, opts CompactOptions) (*CompactResult, error) {
 	}
 
 	totalCompleted := len(completedTasks)
-	if totalCompleted <= opts.Threshold {
-		return &CompactResult{
-			CompactedTasks: 0,
-			RetainedTasks:  totalCompleted,
-			OriginalBytes:  len(originalContent),
-			CompactedBytes: len(originalContent),
-			TokensSavedEst: 0,
-			AlreadyCompact: true,
-		}, nil
-	}
-
-	toArchiveCount := totalCompleted - opts.KeepLast
-	if toArchiveCount <= 0 {
-		return &CompactResult{
-			CompactedTasks: 0,
-			RetainedTasks:  totalCompleted,
-			OriginalBytes:  len(originalContent),
-			CompactedBytes: len(originalContent),
-			TokensSavedEst: 0,
-			AlreadyCompact: true,
-		}, nil
-	}
-
-	archiveEntries := completedTasks[:toArchiveCount]
-	retainedEntries := completedTasks[toArchiveCount:]
+	res.RetainedTasks = totalCompleted
 
 	archiveDir := filepath.Join(sessionDir, "archive")
 	timestamp := time.Now().Format("2006-01-02")
-	archiveFileName := fmt.Sprintf("completed-tasks-%s.md", timestamp)
-	archivePath := filepath.Join(archiveDir, archiveFileName)
-	relativeArchiveRef := filepath.Join("archive", archiveFileName)
 
-	var archiveLines []string
-	for _, entry := range archiveEntries {
-		archiveLines = append(archiveLines, entry.text)
-	}
+	// 1. Compactação de todo.md se exceder o threshold
+	if totalCompleted > opts.Threshold {
+		toArchiveCount := totalCompleted - opts.KeepLast
+		if toArchiveCount > 0 {
+			archiveEntries := completedTasks[:toArchiveCount]
+			retainedEntries := completedTasks[toArchiveCount:]
 
-	// Monta novo conteúdo do todo.md
-	// Remove os índices das tarefas arquivadas e insere nota de rollup
-	skipIndices := make(map[int]bool)
-	for _, entry := range archiveEntries {
-		skipIndices[entry.index] = true
-	}
+			archiveFileName := fmt.Sprintf("completed-tasks-%s.md", timestamp)
+			archivePath := filepath.Join(archiveDir, archiveFileName)
+			relativeArchiveRef := filepath.Join("archive", archiveFileName)
 
-	var newLines []string
-	rollupInserted := false
-
-	for i, line := range lines {
-		if skipIndices[i] {
-			if !rollupInserted {
-				rollupNote := fmt.Sprintf("> 📦 *Histórico compactado: %d tarefas concluídas arquivadas em [%s](%s)*",
-					toArchiveCount, archiveFileName, relativeArchiveRef)
-				newLines = append(newLines, rollupNote)
-				rollupInserted = true
+			var archiveLines []string
+			for _, entry := range archiveEntries {
+				archiveLines = append(archiveLines, entry.text)
 			}
-			continue
+
+			skipIndices := make(map[int]bool)
+			for _, entry := range archiveEntries {
+				skipIndices[entry.index] = true
+			}
+
+			var newLines []string
+			rollupInserted := false
+
+			for i, line := range lines {
+				if skipIndices[i] {
+					if !rollupInserted {
+						rollupNote := fmt.Sprintf("> 📦 *Histórico compactado: %d tarefas concluídas arquivadas em [%s](%s)*",
+							toArchiveCount, archiveFileName, relativeArchiveRef)
+						newLines = append(newLines, rollupNote)
+						rollupInserted = true
+					}
+					continue
+				}
+				newLines = append(newLines, line)
+			}
+
+			newContent := strings.Join(newLines, "\n")
+			tokensSaved := (len(originalContent) - len(newContent)) / 4
+			if tokensSaved < 0 {
+				tokensSaved = 0
+			}
+
+			res.CompactedTasks = toArchiveCount
+			res.RetainedTasks = len(retainedEntries)
+			res.CompactedBytes = len(newContent)
+			res.TokensSavedEst += tokensSaved
+			res.ArchiveFile = archivePath
+			res.AlreadyCompact = false
+
+			if !opts.DryRun {
+				if err := os.MkdirAll(archiveDir, 0755); err != nil {
+					return nil, fmt.Errorf("falha ao criar pasta de arquivo %s: %w", archiveDir, err)
+				}
+
+				archiveHeader := fmt.Sprintf("\n### 📦 Tarefas Compactadas em %s (%d itens)\n",
+					time.Now().Format("2006-01-02 15:04:05"), len(archiveLines))
+				archiveBlock := archiveHeader + strings.Join(archiveLines, "\n") + "\n"
+
+				if err := appendToFile(archivePath, archiveBlock); err != nil {
+					return nil, fmt.Errorf("falha ao escrever no arquivo %s: %w", archivePath, err)
+				}
+
+				if err := os.WriteFile(todoFile, []byte(newContent), 0644); err != nil {
+					return nil, fmt.Errorf("falha ao atualizar %s: %w", todoFile, err)
+				}
+			}
 		}
-		newLines = append(newLines, line)
 	}
 
-	newContent := strings.Join(newLines, "\n")
-	tokensSaved := (len(originalContent) - len(newContent)) / 4
-	if tokensSaved < 0 {
-		tokensSaved = 0
-	}
+	// 2. Compactação de seções de histórico verboso em state.md
+	if fileExists(stateFile) {
+		stateContent, err := os.ReadFile(stateFile)
+		if err == nil {
+			stateLines := strings.Split(string(stateContent), "\n")
+			var cleanStateLines []string
+			var historyLines []string
+			inHistorySection := false
 
-	res := &CompactResult{
-		CompactedTasks: toArchiveCount,
-		RetainedTasks:  len(retainedEntries),
-		OriginalBytes:  len(originalContent),
-		CompactedBytes: len(newContent),
-		TokensSavedEst: tokensSaved,
-		ArchiveFile:    archivePath,
-		AlreadyCompact: false,
-	}
+			for _, sLine := range stateLines {
+				trimmed := strings.TrimSpace(sLine)
+				if strings.HasPrefix(trimmed, "## Histórico") ||
+					strings.HasPrefix(trimmed, "## Execuções Anteriores") ||
+					strings.HasPrefix(trimmed, "## Resultados Anteriores") ||
+					strings.HasPrefix(trimmed, "## Tentativas Anteriores") ||
+					strings.HasPrefix(trimmed, "## Logs") {
+					inHistorySection = true
+				} else if strings.HasPrefix(trimmed, "## ") && inHistorySection {
+					inHistorySection = false
+				}
 
-	if opts.DryRun {
-		return res, nil
-	}
+				if inHistorySection {
+					historyLines = append(historyLines, sLine)
+				} else {
+					cleanStateLines = append(cleanStateLines, sLine)
+				}
+			}
 
-	// 1. Grava no archive
-	if err := os.MkdirAll(archiveDir, 0755); err != nil {
-		return nil, fmt.Errorf("falha ao criar pasta de arquivo %s: %w", archiveDir, err)
-	}
+			if len(historyLines) > 0 {
+				newCleanState := strings.Join(cleanStateLines, "\n")
+				diff := len(stateContent) - len(newCleanState)
+				if diff > 0 {
+					res.StateCompacted = true
+					res.StateBytesSaved = diff
+					res.TokensSavedEst += diff / 4
+					res.AlreadyCompact = false
 
-	archiveHeader := fmt.Sprintf("\n### 📦 Tarefas Compactadas em %s (%d itens)\n",
-		time.Now().Format("2006-01-02 15:04:05"), len(archiveLines))
-	archiveBlock := archiveHeader + strings.Join(archiveLines, "\n") + "\n"
+					stateArchiveFileName := fmt.Sprintf("state-history-%s.md", timestamp)
+					stateArchivePath := filepath.Join(archiveDir, stateArchiveFileName)
+					res.StateArchiveFile = stateArchivePath
 
-	f, err := os.OpenFile(archivePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		return nil, fmt.Errorf("falha ao abrir arquivo de arquivo %s: %w", archivePath, err)
-	}
-	if _, err := f.WriteString(archiveBlock); err != nil {
-		_ = f.Close()
-		return nil, fmt.Errorf("falha ao escrever no arquivo %s: %w", archivePath, err)
-	}
-	_ = f.Close()
+					if !opts.DryRun {
+						if err := os.MkdirAll(archiveDir, 0755); err != nil {
+							return nil, fmt.Errorf("falha ao criar pasta de arquivo %s: %w", archiveDir, err)
+						}
 
-	// 2. Grava novo todo.md
-	if err := os.WriteFile(todoFile, []byte(newContent), 0644); err != nil {
-		return nil, fmt.Errorf("falha ao atualizar %s: %w", todoFile, err)
+						historyHeader := fmt.Sprintf("\n### 📜 Histórico de Estado Arquivado em %s\n",
+							time.Now().Format("2006-01-02 15:04:05"))
+						historyBlock := historyHeader + strings.Join(historyLines, "\n") + "\n"
+
+						if err := appendToFile(stateArchivePath, historyBlock); err != nil {
+							return nil, fmt.Errorf("falha ao escrever no arquivo de histórico de estado %s: %w", stateArchivePath, err)
+						}
+
+						if err := os.WriteFile(stateFile, []byte(newCleanState), 0644); err != nil {
+							return nil, fmt.Errorf("falha ao atualizar %s: %w", stateFile, err)
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return res, nil
+}
+
+func appendToFile(path string, content string) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(content)
+	return err
 }

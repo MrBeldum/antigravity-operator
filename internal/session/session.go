@@ -20,12 +20,15 @@ type Result struct {
 
 // Summary sintetiza o estado e tarefas da sessão atual.
 type Summary struct {
-	SessionDir string
-	Objective  string
-	Status     string
-	TotalTasks int
-	DoneTasks  int
-	Pending    []string
+	SessionDir      string
+	Objective       string
+	Status          string
+	TotalTasks      int
+	DoneTasks       int
+	Pending         []string
+	TotalSizeBytes  int64
+	EstimatedTokens int
+	HealthStatus    string // "Optimal 🟢", "Moderate 🟡", "Bloated 🔴"
 }
 
 // Init inicializa a pasta de memória operacional de sessão (.agents/session/) no diretório alvo.
@@ -132,6 +135,24 @@ func GetSummary(targetDir string) (*Summary, error) {
 				summary.Pending = append(summary.Pending, taskName)
 			}
 		}
+	}
+
+	// 3. Cálculo de pegada de memória e tokens estimados
+	var totalBytes int64
+	for _, fname := range []string{"state.md", "todo.md", "decisions.md"} {
+		if fi, err := os.Stat(filepath.Join(sessionDir, fname)); err == nil {
+			totalBytes += fi.Size()
+		}
+	}
+	summary.TotalSizeBytes = totalBytes
+	summary.EstimatedTokens = int(totalBytes / 4)
+
+	if summary.EstimatedTokens < 1500 && summary.DoneTasks < 8 {
+		summary.HealthStatus = "Optimal 🟢"
+	} else if summary.EstimatedTokens < 3500 && summary.DoneTasks < 15 {
+		summary.HealthStatus = "Moderate 🟡"
+	} else {
+		summary.HealthStatus = "Bloated 🔴"
 	}
 
 	return summary, nil
