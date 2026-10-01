@@ -58,11 +58,24 @@ graph TD
    * Formata pensamentos (`💭 Think`), chamadas de ferramentas (`🛠️ Tool`) e interação do usuário (`👤 User`).
    * Dispara alertas visuais e sonoros no sistema operacional (`osascript` no macOS, `notify-send` no Linux, bell terminal `\a`) quando o agente solicita resposta (`ask_question`).
 
-5. **Hook de Continuidade Pré-Commit (`agyo hook`):**
+5. **Rede de Segurança & Checkpoints Atômicos (`agyo checkpoint` & `agyo rollback`):**
+   * Cria instantâneos atômicos do git antes de refatorações arriscadas.
+   * Rastreia alterações não commitadas via `git stash create` sem sujar ou alterar o working tree ativo.
+   * Permite rollback com um único comando (`agyo rollback`), restaurando o estado original e gravando log de auditoria no `state.md`.
+
+6. **Compactação de Tarefas e Histórico de Sessões (`agyo session compact/list/restore`):**
+   * Previne context bloat e desperdício de tokens LLM com rollup automático.
+   * Lista o histórico de sessões com métricas de conclusão de tarefas (`agyo session list`).
+   * Restaura sessões anteriores com backup preventivo automático (`pre-restore-<timestamp>.md`).
+
+7. **Lista Negra de Tokens (`.agentignore`):**
+   * Criado automaticamente durante o `agyo init` para proteger o contexto do modelo contra pastas densas (`node_modules/`, `vendor/`), lockfiles, dumps de banco e credenciais `.env`.
+
+8. **Hook de Continuidade Pré-Commit (`agyo hook`):**
    * Instala um sensor do outer harness em `.git/hooks/pre-commit`.
    * Bloqueia commits caso `.agents/session/state.md` e `todo.md` não tenham sido atualizados na sessão.
 
-6. **Sincronização de Regras (`agyo sync`):**
+9. **Sincronização de Regras (`agyo sync`):**
    * Grava as regras canônicas do Session Agent em `~/.gemini/antigravity/rules/session-agent.md`.
    * Prepara os manifestos padrão de MCPs em `~/.gemini/antigravity/mcp/default-servers.json`.
 
@@ -70,7 +83,7 @@ graph TD
 
 ## 3. Padrões de Projeto e Decisões de Engenharia
 
-- **Single Responsibility Principle (SRP):** Cada pacote sob `internal/` possui um escopo estrito e não vaza detalhes de implementação para outros pacotes.
+- **Single Responsibility Principle (SRP):** Cada pacote sob `internal/` (`platform`, `session`, `checkpoint`, `profile`, `installer`, `doctor`, `hook`, `watcher`, `dashboard`, `exporter`) possui um escopo estrito e não vaza detalhes de implementação para outros pacotes.
 - **Embed Nativo (`//go:embed`):** Permite distribuição de binário único sem instaladores complexos ou necessidade de clonar o repositório em todas as máquinas.
 - **Zero CGO (`CGO_ENABLED=0`):** Garante compatibilidade binária entre qualquer versão de kernel Linux e biblioteca C (glibc ou musl).
 - **Zero Dependências Externas em Tempo de Execução:** Todo o código de rede, WebSockets (RFC 6455) e streaming de JSONL é implementado diretamente sobre a biblioteca padrão do Go.

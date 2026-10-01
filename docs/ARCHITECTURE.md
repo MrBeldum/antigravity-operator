@@ -62,11 +62,24 @@ graph TD
    * Formats agent thoughts (`💭 Think`), tool invocations (`🛠️ Tool`), and user interactions (`👤 User`).
    * Fires native OS desktop alerts (`osascript` on macOS, `notify-send` on Linux, terminal bell `\a`) when `ask_question` or user input is requested.
 
-5. **Session Continuity Pre-Commit Hook (`agyo hook`):**
+5. **Filesystem Safety Net & Atomic Checkpoints (`agyo checkpoint` & `agyo rollback`):**
+   * Creates atomic git porcelain commit snapshots before risky refactors.
+   * Tracks uncommitted changes via `git stash create` without dirtying or modifying the active working tree.
+   * Enables one-command panic button restoration (`agyo rollback`) restoring pristine filesystem state and appending audit log into `state.md`.
+
+6. **Session Compaction & History Lifecycle (`agyo session compact/list/restore`):**
+   * Prevents LLM context bloat with deterministic task rollup.
+   * Lists archived missions with task completion metrics (`agyo session list`).
+   * Restores historical sessions into active memory with automatic safety backup (`pre-restore-<timestamp>.md`).
+
+7. **Token Blacklist Protection (`.agentignore`):**
+   * Automatically scaffolded during `agyo init` to prevent agents from reading `node_modules/`, `vendor/`, lockfiles, dumps, and `.env` secrets into context.
+
+8. **Session Continuity Pre-Commit Hook (`agyo hook`):**
    * Installs an outer harness sensor into `.git/hooks/pre-commit`.
    * Verifies that `.agents/session/state.md` and `todo.md` have been updated before allowing code commits.
 
-6. **Rules & Manifesto Sync (`agyo sync`):**
+9. **Rules & Manifesto Sync (`agyo sync`):**
    * Deploys canonical Session Agent directives into `~/.gemini/antigravity/rules/session-agent.md`.
    * Configures standard Model Context Protocol servers in `~/.gemini/antigravity/mcp/default-servers.json`.
 
@@ -74,7 +87,7 @@ graph TD
 
 ## 3. Engineering Decisions & Principles
 
-- **Single Responsibility Principle (SRP):** Each internal package (`platform`, `session`, `profile`, `installer`, `doctor`, `cdp`, `hook`, `watcher`) is strictly decoupled.
+- **Single Responsibility Principle (SRP):** Each internal package (`platform`, `session`, `checkpoint`, `profile`, `installer`, `doctor`, `hook`, `watcher`, `dashboard`, `exporter`) is strictly decoupled.
 - **Embedded Assets (`//go:embed`):** Eliminates external filesystem dependencies at runtime, ensuring offline, self-contained single-binary execution.
 - **Pure Go / Zero CGO (`CGO_ENABLED=0`):** Guarantees dynamic linker independence across glibc, musl, and diverse Linux kernel distributions.
 - **Zero Third-Party Runtime Dependencies:** All networking, WebSockets (RFC 6455), and JSONL streaming are implemented directly on Go's standard library.

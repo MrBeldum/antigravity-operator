@@ -207,25 +207,18 @@ make install
 Audita se o sistema operacional, Git, Chrome, Node/NPX e conexões de harness estão prontos:
 ```bash
 agyo doctor
-```
+```bash
+agyo doctor
 
-Saída de exemplo:
-```text
-🔍 Antigravity Operator Doctor [SO: darwin | Arch: arm64]
-🖥️  Ambiente Gráfico: Detectado (Desktop GUI)
------------------------------------------------------------------
-✅ Git                          : git version 2.39.5 (Apple Git-154) (Tiago Vilas Boas <tcarvalhovb@gmail.com>)
-✅ Google Antigravity           : Ativo (5 processos detectados, PID primário: 71409)
-✅ Google Chrome                : Localizado em: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-✅ Chrome DevTools (Port 9222)  : Ativo (Chrome/153.0) no perfil isolado
-✅ NPX (MCP Runtime)            : Versão 10.8.2 disponível
-ℹ️  Gemini API Key (BYOK)        : Configurada via GEMINI_API_KEY (AIza...9876)
-✅ Harness Core                 : Conectado em /Users/tiago.boas/Github/harness-core
------------------------------------------------------------------
+# Saída em formato JSON para extensões e scripts:
+agyo doctor --json
+
+# Sensor de autorrecuperação (Self-Healing): repara arquivos ausentes ou corrompidos:
+agyo doctor --fix
 ```
 
 ### 2. Inicializar a memória operacional no projeto atual (`init`)
-Cria a pasta `.agents/session/` com rastreamento de estado, decisões e tarefas:
+Cria a pasta `.agents/session/` com rastreamento de estado, decisões e tarefas, além do `.agentignore`:
 ```bash
 cd meu-projeto
 agyo init
@@ -236,12 +229,18 @@ Estrutura criada:
 - `.agents/session/decisions.md` (Log de premissas e trade-offs arquiteturais)
 - `.agents/session/todo.md` (Tarefas em andamento, pendentes e concluídas)
 - `.agents/.gitignore` (Protegendo logs e credenciais contra commits acidentais)
+- `.agentignore` (Lista negra de tokens: exclui `node_modules/`, `vendor/`, lockfiles e dumps)
 
 ### 3. Inspecionar e Gerenciar a Memória de Sessão (`session`)
 Acompanhe o progresso ativo, faça streaming do raciocínio em tempo real ou arquive missões concluídas:
 ```bash
-# Ver objetivo atual, fase e porcentagem de tarefas concluídas:
+# Ver objetivo atual, fase e porcentagem de tarefas concluídas (suporta --json):
 agyo session status
+agyo session status --json
+
+# Compactar tarefas concluídas para evitar context bloat de tokens:
+agyo session compact
+agyo session compact --dry-run
 
 # Acompanhar raciocínio e chamadas de ferramentas em tempo real com notificações nativas:
 agyo session watch
@@ -255,9 +254,32 @@ agyo session export --format=html --out=relatorio-sessao.html
 
 # Arquivar sessão concluída para o histórico e resetar templates para a próxima tarefa:
 agyo session archive
+
+# Listar histórico de sessões arquivadas (suporta --json):
+agyo session list
+agyo session list --json
+
+# Restaurar sessão arquivada para a memória ativa (gera backup preventivo automático):
+agyo session restore session-2026-10-01-113140.md
+agyo session restore latest
 ```
 
-### 4. Dashboard Web & Inspetor Local em Tempo Real (`dashboard`)
+### 4. Checkpoints Atômicos & Botão de Pânico (`checkpoint` & `rollback`)
+Proteja seu repositório contra refatorações alucinadas ou destrutivas de agentes de IA:
+```bash
+# Criar snapshot atômico antes de um refactor complexo:
+agyo checkpoint "pre-refactor" --desc="Antes de alterar migrations do banco"
+
+# Listar checkpoints salvos (suporta --json):
+agyo checkpoint --list
+agyo checkpoint --list --json
+
+# Botão de pânico: reverte alterações locais e restaura a working tree exata:
+agyo rollback
+agyo rollback chk-20261001-113000
+```
+
+### 5. Dashboard Web & Inspetor Local em Tempo Real (`dashboard`)
 Inicia um servidor web em Go puro com zero dependências externas em `http://127.0.0.1:8080`, com UI dark mode moderna, progresso de sessão, diagnósticos do host, abas ativas do Chrome e live activity log:
 ```bash
 # Iniciar dashboard e abrir automaticamente no navegador padrão:
