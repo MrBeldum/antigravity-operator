@@ -11,3 +11,4 @@
 - [x] Badges dinâmicos de alta autoridade (Release, CI Status, Go Report Card) nos READMEs
 - [x] Targets profissionais no Makefile (`make fmt`, `make lint`, `make coverage`)
 - [x] Release v0.4.1 gerada e Homebrew Tap sincronizado com autocompletions nativos (`generate_completions_from_executable`)
+- [x] Release v0.4.2 com motor de compactação (`agyo session compact`), poda de histórico de `state.md`, telemetria de tokens em tempo real e sensor no `agyo doctor` (Homebrew Tap sincronizado)
