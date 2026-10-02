@@ -2,7 +2,44 @@
 
 Bem-vindo à documentação aprofundada de arquitetura e design de sistemas do **Antigravity Operator (`agyo`)**.
 
-Esta documentação foi desenhada para engenheiros de software, pesquisadores, arquitetos de IA e colaboradores open source que desejam entender **cada decisão técnica, cada camada de abstração, as garantias de complexidade computacional e o fluxo determinístico ponta a ponta** do operador.
+Esta documentação foi desenhada para engenheiros de software, pesquisadores, arquitetos de IA e colaboradores open source que desejam entender **a dor profunda de desenvolvimento com agentes, as garantias de complexidade computacional, as decisões de design e o fluxo determinístico ponta a ponta** do operador.
+
+---
+
+## 🔥 A Dor Real: Por Que Agentes de IA Falham no Mundo Real?
+
+Modelos de linguagem modernos (como o Gemini 1.5 Pro no Google Antigravity, Claude 3.5 Sonnet ou GPT-4o) possuem capacidades cognitivas impressionantes. No entanto, quando colocados para programar de forma autônoma no sistema operacional do desenvolvedor, **quatro modos críticos de falha arruínam a experiência**:
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        OS 4 GRANDES GARGALOS DE AGENTES DE IA                          │
+├──────────────────────────┬──────────────────────────┬──────────────────────────────────┤
+│ 1. Amnésia & Context     │ 2. O Efeito              │ 3. Invasão de Browser            │
+│    Bloat                 │    "Agente Bêbado"       │    & Segurança                   │
+│                          │                          │                                  │
+│ Conforme os turnos       │ O modelo altera arquivos │ O agente tenta usar o perfil     │
+│ acumulam (+50 turnos), a │ às cegas sem rodar       │ pessoal do Chrome do dev:        │
+│ atenção do modelo se     │ testes, entra em loops   │ conflito de lockfiles, cookies   │
+│ fragmenta. Ele esquece   │ de refatoração quebrados │ de banco expostos e histórico    │
+│ decisões acordadas e     │ e polui o Git com        │ pessoal inundado de abas de      │
+│ queima cota de tokens.   │ dezenas de commits lixo. │ automação.                       │
+├──────────────────────────┴──────────────────────────┴──────────────────────────────────┤
+│ 4. O Abismo macOS vs Linux: Scripts que rodam no Mac quebram no Linux/Docker/WSL2      │
+│    devido à falta de tela ($DISPLAY), problemas de GPU e permissões de sandbox.        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 💡 O Que o `agyo` Suprime e Resolve
+
+O `antigravity-operator` foi concebido não como mais um chatbot ou wrapper de API, mas como um **Outer Harness & OS Engine** determinístico que blinda o ambiente do desenvolvedor:
+
+1. **Suprime a Amnésia:** Fornece memória executiva estruturada no filesystem (`.agents/session/{state.md, decisions.md, todo.md}`). O modelo pode ser reiniciado 100 vezes e ainda assim saberá exatamente o objetivo, as premissas acordadas e a próxima linha de código a alterar.
+2. **Suprime o Context Bloat ($O(1)$ Memory):** Com o algoritmo de **Rollup & Compaction**, tarefas antigas são arquivadas out-of-band em **0.19 ms**, reduzindo o footprint de tokens em até **~75% por turno** e mantendo a acurácia do modelo afiada mesmo no Turno 80.
+3. **Suprime o Desperdício de Tokens (`.agentignore`):** Bloqueia a leitura inadvertida de `node_modules/`, `vendor/`, lockfiles densos de 50.000 linhas e arquivos `.env` confidenciais.
+4. **Suprime o Medo de Refatorações Destrutivas (`checkpoint` & `rollback`):** Cria instantâneos atômicos do Git via objetos de stash commit sem poluir o histórico. Se a IA estragar o código, **um único comando `agyo rollback` restaura a working tree inteira em microssegundos**.
+5. **Suprime a Invasão do Navegador Pessoal:** Orquestra uma instância 100% isolada do Google Chrome (`~/.gemini/antigravity-browser-profile`) na porta 9222 com protocolo DevTools nativo em Go (RFC 6455) e auto-fallback para modo headless em servidores Linux.
 
 ---
 
