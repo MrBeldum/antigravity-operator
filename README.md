@@ -179,8 +179,10 @@ antigravity-operator/
 ├── SECURITY.md               # Responsible vulnerability disclosure policy
 ├── PRIVACY.md                # Zero-telemetry local-first privacy policy (LGPD & GDPR)
 ├── CONTRIBUTING.md           # Contribution guide and testing protocol
-└── Makefile                  # Native build, lint, coverage and cross-compilation targets
 ```
+
+> 📖 **Comprehensive Engineering Specification:**  
+> For an in-depth breakdown of every subsystem, RFC 6455 WebSocket CDP implementation, $O(1)$ memory algorithms, and design decisions, read the [System Specification Index (docs/spec/)](docs/spec/README.md).
 
 ---
 

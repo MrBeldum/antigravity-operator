@@ -165,6 +165,9 @@ antigravity-operator/
 └── Makefile                  # Alvos de build nativo, lint, coverage e cross-compilação
 ```
 
+> 📖 **Especificação Detalhada de Engenharia e Arquitetura:**  
+> Para uma análise aprofundada de cada subsistema, implementação RFC 6455 do CDP WebSocket em Go puro, algoritmos de memória $O(1)$ e decisões de design, leia o [Índice de Especificações do Sistema (docs/spec/)](docs/spec/README.md).
+
 ---
 
 ## 🤖 Assisted-IA & Ecossistema de Agentes
