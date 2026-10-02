@@ -113,3 +113,13 @@ secrets.*
    - Se um usuário ou script deletar acidentalmente o `.agentignore`, o comando `agyo doctor --fix` detecta a ausência e recria o template original imediatamente.
 3. **Consumo por Ferramentas e Hooks:**
    - Ferramentas de busca de arquivos locais e MCPs utilizam o `.agentignore` como filtro de primeira classe para podar a árvore de diretórios antes de formatar os tokens do prompt.
+
+---
+
+## 4. Decisões Técnicas & Trade-Offs
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Formato de Configuração** | **Arquivo `.agentignore` (padrão gitignore/glob)** | Regras hardcoded no código Go ou prompts gigantes de instrução | **Vantagem:** Desenvolvedores já dominam a sintaxe do `.gitignore`. Customizável por repositório sem recompilar o binário.<br>**Trade-off:** Exige manutenção de um arquivo adicional na raiz do workspace. |
+| **Comportamento em Inicializações Existentes** | **Non-Destructive Preserving** | Sobrescrever forçadamente no `init` | **Vantagem:** Respeita as regras de exclusão customizadas já configuradas pelo time.<br>**Trade-off:** Se o template original do `agyo` evoluir com novas regras padrão, projetos antigos não recebem as adições a menos que usem `--force`. |
+| **Prevenção de Segredos** | **Exclusão de `.env*` e chaves criptográficas** | Permitir envio e contar com filtros do LLM | **Vantagem:** Defesa em profundidade; dados confidenciais nunca chegam à janela de contexto.<br>**Trade-off:** Se o agente realmente precisar editar um `.env.example`, o arquivo precisa ter exceção explícita (`!.env.example`). |

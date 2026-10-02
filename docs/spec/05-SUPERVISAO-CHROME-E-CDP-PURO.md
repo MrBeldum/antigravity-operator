@@ -101,3 +101,13 @@ Para garantir que o código do cliente WebSocket CDP seja testado em ambientes d
 2. Handshake completo RFC 6455 (`Sec-WebSocket-Accept` calculado com SHA-1 + Magic GUID `258EAFA5-E914-47DA-95CA-C5AB0DC85B11`).
 3. Decodificação de frames mascarados do cliente e envio de frames sem máscara com respostas mockadas de JavaScript e captura de tela (1x1 PNG base64).
 4. Essa suíte garante **70.9% de cobertura de código no pacote `internal/profile`** sem depender de software externo.
+
+---
+
+## 6. Decisões Técnicas & Trade-Offs
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Cliente WebSocket CDP** | **Implementação nativa RFC 6455 stdlib (`net.Conn`)** | Importar `gorilla/websocket` ou orquestrar via Puppeteer/Playwright | **Vantagem:** Zero dependências no `go.mod`, binário portátil de 8MB, controle milimétrico de timeouts e framing.<br>**Trade-off:** Precisamos escrever e manter o bit-masking e parsing binário de frames RFC 6455 internamente. |
+| **Isolamento de Perfil** | **Diretório dedicado `~/.gemini/antigravity-browser-profile`** | Usar a pasta de dados de usuário padrão do Chrome (`Default`) | **Vantagem:** Zero risco de fechar as abas pessoais do desenvolvedor, vazar senhas ou colidir cookies pessoais com testes de desenvolvimento.<br>**Trade-off:** O desenvolvedor precisa fazer login em serviços de desenvolvimento dentro do perfil dedicado da IA uma primeira vez. |
+| **Testes sem Chrome Físico** | **Mock TCP Server com handshake e frames simulados** | Exigir Chrome instalado ou pular testes em CI | **Vantagem:** CI passa em Linux headless, macOS e containers sem instalar o binário do Google Chrome.<br>**Trade-off:** O mock valida a conformidade do protocolo e do frame reader, mas não substitui testes end-to-end de renderização real do browser. |

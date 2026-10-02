@@ -85,3 +85,13 @@ Em vez de utilizar frameworks de terceiros como `cobra` ou `urfave/cli`, o `agyo
 - **Vantagem de Performance:** Inicialização em microssegundos (0 dependências no grafo de imports).
 - **Vantagem de Tamanho:** Reduz o binário compilado em vários megabytes.
 - **Isolamento de Flags:** Cada comando possui seu próprio `flag.NewFlagSet`, permitindo que argumentos posicionais e flags (`--json`, `--fix`, `--force`, `--desc`) sejam interpretados exclusivamente no escopo do comando solicitado.
+
+---
+
+## 5. Decisões Técnicas & Trade-Offs
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Engine CLI** | **`flag.FlagSet` stdlib puro** | Frameworks de terceiros (`cobra`, `urfave/cli`) | **Vantagem:** Inicialização instantânea, zero dependências externas no `go.mod`, binário enxuto.<br>**Trade-off:** Roteamento manual de subcomandos via `switch os.Args[1]`. |
+| **Detecção de Chrome** | **Heurística multi-path com fallback para `$CHROME_BIN`** | Forçar o Chrome a estar apenas no `$PATH` | **Vantagem:** No macOS o Chrome quase nunca está no `$PATH` por padrão (`/Applications/...`). Funciona out-of-the-box para usuários Mac e Linux.<br>**Trade-off:** Se o usuário tiver instalações customizadas em paths exóticos, precisa declarar `CHROME_BIN`. |
+| **Tratamento de `$DISPLAY`** | **Detecção em runtime no Linux** | Exigir flag `--headless` manual sempre | **Vantagem:** Previne falhas crípticas em servidores remotos, containers e pipelines de CI.<br>**Trade-off:** No Linux, se `$DISPLAY` e `$WAYLAND_DISPLAY` estiverem ausentes, o browser força headless silenciosamente com aviso explicativo. |

@@ -70,3 +70,13 @@ Para equipes que preferem monitoramento visual ou desejam manter uma janela de c
 ### 4.2. Zero Dependências e Segurança
 - O frontend da web UI é embarcado diretamente no código Go, sem exigir `npm install`, sem assets baixados de CDNs externos e funcionando 100% offline.
 - Encerramento gracioso via captura de sinais do SO (`SIGINT` e `SIGTERM`) com timeout de segurança de 2 segundos.
+
+---
+
+## 5. Decisões Técnicas & Trade-Offs
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Estratégia do Watcher** | **Tailing reativo de arquivo JSONL com byte offset** | File polling completo regendo o arquivo do início | **Vantagem:** Consumo de CPU imperceptível mesmo com logs de transcripts atingindo dezenas de megabytes.<br>**Trade-off:** Se o arquivo de log sofrer truncamento extremo ou rotação, o watcher precisa resetar o offset para 0. |
+| **Notificações do SO** | **Detecção de binário nativo (`osascript` no Mac, `notify-send` no Linux)** | Bibliotecas CGO de desktop notification | **Vantagem:** Zero dependências compiladas nativas em C, preservando compilação cruzada pura (`CGO_ENABLED=0`).<br>**Trade-off:** Depende dos utilitários padrão do sistema estarem presentes no PATH. |
+| **Web Dashboard** | **HTML5/CSS3 embarcado em Go puro (`net/http`)** | SPA em React/Vue com build Node.js | **Vantagem:** Distribuição de arquivo único. O usuário clica e sobe instantaneamente sem `npm run dev`.<br>**Trade-off:** Interface com polling regular via API JSON em vez de hot-reloading complexo com WebSocket/SSR. |

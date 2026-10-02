@@ -92,3 +92,13 @@ agyo rollback chk-20261001-113000
    - O operador anexa automaticamente uma nota de auditoria em `.agents/session/state.md`:
      `> ⚠️ *Rollback efetuado para o checkpoint 'pre-refactor' (chk-20261001-113000) em 2026-10-01 11:35:10*`
    - Isso garante que a próxima janela de contexto do agente saiba que o refatoramento falhou e foi revertido com segurança.
+
+---
+
+## 5. Decisões Técnicas & Trade-Offs
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Mecanismo de Snapshot** | **`git stash create` (commit object solto no DAG)** | `git stash push` ou clonagem/cópia de diretórios em disco | **Vantagem:** Não polui o histórico de commits nem altera o estado atual da working tree durante o snapshot. Leve e instantâneo.<br>**Trade-off:** Se o garbage collection do git rodar sem referências por muito tempo, objetos soltos podem ser expurgados (mitigado ao manter ponteiro de SHA no JSON). |
+| **Estratégia de Rollback** | **`git reset --hard` + `git clean -fd` + `git stash apply`** | `git checkout .` simples | **Vantagem:** Garante que arquivos novos espúrios e alucinações de diretórios criados pela IA sejam purgados sem deixar lixo no repositório.<br>**Trade-off:** Ação destrutiva no working tree (por isso o snapshot salva o estado exato antes da reversão). |
+| **Auditoria no `state.md`** | **Registro append automático após rollback** | Deixar a reversão silenciosa | **Vantagem:** O agente em sua próxima invocação "sabe" que houve falha e reversão, evitando repetir o mesmo erro em loop.<br>**Trade-off:** Adiciona uma linha de aviso no histórico do estado operacional. |

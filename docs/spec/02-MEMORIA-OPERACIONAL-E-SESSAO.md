@@ -85,6 +85,17 @@ Quando uma missão de grande porte é finalizada, o usuário ou agente executa `
 ### 5.1. Restauração com Backup Preventivo (`session.Restore`)
 Ao executar `agyo session restore <nome-do-arquivo|latest>`:
 1. O operador localiza e valida o arquivo histórico no diretório de arquivo.
-2. **Gera automaticamente um backup preventivo** (`.agents/session/archive/pre-restore-<timestamp>.md`) do estado atual ativo antes de qualquer sobrescrita.
+2. Cria **automaticamente um snapshot de segurança** do estado atual antes da sobrescrita (`archive/pre-restore-YYYY-MM-DD-HHMMSS.md`).
 3. Restaura o objetivo, fase e lista de tarefas anteriores para `state.md` e `todo.md`.
 4. Garante que nenhuma decisão ou tarefa em andamento seja perdida por erro operacional.
+
+---
+
+## 6. Decisões Técnicas & Trade-Offs do Subsistema de Memória
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Estratégia de Compactação** | **Rollup Determinístico Estruturado** | Usar LLM para resumir as tarefas anteriores | **Vantagem:** Execução em **0.19 ms**, zero consumo de cota de API, determinismo absoluto e sem risco de alucinação no resumo.<br>**Trade-off:** O bloco de rollup é sintético estruturado (contadores e últimas tarefas) em vez de uma narrativa rica em prosa. |
+| **Ponto de Gatilho da Compactação** | **Threshold de 5 tarefas (KeepLast: 3)** | Compactar a cada tarefa concluída ou deixar acumular 50+ | **Vantagem:** Equilibra estabilidade contextual sem acionar I/O de disco a cada turno e evita context bloat.<br>**Trade-off:** Até 4 tarefas concluídas ainda coexistem no `todo.md` ativo antes do disparo. |
+| **Garantia de Não-Perda no Restore** | **Backup preventivo obrigatório (`pre-restore-*.md`)** | Sobrescrever direto os arquivos ativos | **Vantagem:** Impossível o desenvolvedor ou a IA perder acidentalmente o estado atual ao alternar para uma sessão antiga.<br>**Trade-off:** Gera um arquivo markdown extra em `.agents/session/archive/`. |
+

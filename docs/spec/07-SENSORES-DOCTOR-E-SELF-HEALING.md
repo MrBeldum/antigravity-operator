@@ -87,3 +87,13 @@ Ao executar `agyo hook install`:
    - Rejeita o commit caso haja falhas no código ou inconsistências de sessão.
 
 Para remover o hook quando necessário, basta executar `agyo hook uninstall`.
+
+---
+
+## 5. Decisões Técnicas & Trade-Offs
+
+| Decisão | O Que Foi Escolhido | Alternativa Rejeitada | Racional & Trade-Off |
+|---|---|---|---|
+| **Self-Healing Conservador** | **Correção seletiva (`--fix`) que cria o faltante sem sobrescrever** | Reset destrutivo que reescreve todas as configurações | **Vantagem:** Seguro para rodar em produção e projetos ativos; restaura o que está faltando sem perder o trabalho existente.<br>**Trade-off:** Se um arquivo existir mas estiver com sintaxe corrompida, o `--fix` aponta o erro mas exige intervenção intencional. |
+| **Formato de Saída Machine-Readable** | **JSON puro na flag `--json` com status codes limpos** | Output em texto formatado com tabelas ANSI para scripts | **Vantagem:** Automação confiável com `jq`, hooks de CI e outros agentes sem quebra por formatação visual.<br>**Trade-off:** Exige que comandos suportem serialização explícita de structs para JSON. |
+| **Hook Pré-Commit Local** | **Hook Git nativo em `.git/hooks/pre-commit`** | Depender de ferramentas pesadas de terceiros (ex: Husky, pre-commit python) | **Vantagem:** Executa instantaneamente sem runtime Python ou Node.js instalado.<br>**Trade-off:** Hooks do Git são locais e não são versionados automaticamente pelo repositório remoto, exigindo `agyo hook install` no onboarding do dev. |
