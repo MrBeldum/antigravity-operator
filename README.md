@@ -342,7 +342,7 @@ agyo browser stop
 ```
 
 ### 8. Git Pre-Commit Continuity Hook (`hook`)
-Installs a `.git/hooks/pre-commit` script that prints the session status and compacts `todo.md` when it has 5+ done tasks. It is a reminder, not a gate: it always exits 0 and never blocks a commit:
+Installs a `.git/hooks/pre-commit` script that prints the session status when `agyo` is on your PATH. When `todo.md` has 5 or more done tasks, it also runs `agyo session compact` and then `git add .agents/session/`, so the compacted session files are staged into that same commit. It is a reminder, not a gate: it always exits 0 and never blocks a commit:
 ```bash
 # Install hook in current repository (or specific target dir):
 agyo hook install
