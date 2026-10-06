@@ -94,7 +94,6 @@ func Create(targetDir string, name string, description string) (*Checkpoint, err
 	return chk, nil
 }
 
-
 // uniqueCheckpointID builds chk-YYYYMMDD-HHMMSS, appending -2, -3, ... when that
 // second already has an ID in the existing list so rapid creates stay distinct.
 func uniqueCheckpointID(existing []Checkpoint, now time.Time) string {

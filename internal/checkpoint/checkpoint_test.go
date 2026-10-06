@@ -327,7 +327,6 @@ func TestRollback_RefusesOtherBranchWhenMoved(t *testing.T) {
 	}
 }
 
-
 func TestCreate_DistinctIDsSameSecond(t *testing.T) {
 	repoDir := setupTestGitRepo(t)
 
